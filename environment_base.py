@@ -4,14 +4,14 @@ import abc
 
 
 class BaseEnvironment(object):
-    __metaclass__=abc.ABCMeta
+    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def get_start_node(self):
         return
 
     @abc.abstractmethod
-    def print_board(self):
+    def get_goal_node(self):
         return
 
     @abc.abstractmethod
@@ -19,7 +19,5 @@ class BaseEnvironment(object):
         return
 
     @abc.abstractmethod
-    def dist_between(self, node, successor):
+    def movement_cost(self, node, successor):
         return
-
-
