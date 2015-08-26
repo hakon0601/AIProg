@@ -4,19 +4,38 @@ import random
 import board
 import a_star
 
+from Tkinter import *
 
 class Gui(tk.Tk):
-    def __init__(self, filename, delay, *args, **kwargs):
+    def __init__(self, delay, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         self.delay = delay
 
-        self.board = board.Board(filename)
-        self.a_star = a_star.AStar("Breadth-first")
+        self.v = StringVar()
 
-        self.B = tk.Button(self, text ="Start", command=self.start)
+        self.rb1 = tk.Radiobutton(self, text="Board 1", value="board1", variable=self.v, command=self.drawBoard)
+        self.rb2 = tk.Radiobutton(self, text="Board 2", value="board2", variable=self.v, command=self.drawBoard)
+        self.rb3 = tk.Radiobutton(self, text="Board 3", value="board3", variable=self.v, command=self.drawBoard)
+        self.rb4 = tk.Radiobutton(self, text="Board 3", value="board4", variable=self.v, command=self.drawBoard)
+        self.rb5 = tk.Radiobutton(self, text="Board 3", value="board5", variable=self.v, command=self.drawBoard)
+        self.rb6 = tk.Radiobutton(self, text="Board 3", value="board6", variable=self.v, command=self.drawBoard)
+
+        self.rb1.pack(anchor=W)
+        self.rb2.pack(anchor=W)
+        self.rb3.pack(anchor=W)
+        print "tegner "+self.v.get()
+
+    def drawBoard(self):
+        self.B = tk.Button(self, text ="Start", command=self.drawBoard)
         self.B.pack()
+        self.board = board.Board(self.v.get())
+        self.a_star = a_star.AStar("Breadth-first")
+        self.start()
 
     def start(self):
+        self.rb1.destroy()
+        self.rb2.destroy()
+        self.rb3.destroy()
         self.B.destroy()
         self.canvas = tk.Canvas(self, width=1000, height=1000, borderwidth=0, highlightthickness=0)
         self.canvas.pack(side="top", fill="both", expand="true")
@@ -69,5 +88,5 @@ class Gui(tk.Tk):
                 self.rect[y,x] = self.canvas.create_rectangle(x1,y1,x2,y2, fill=color, tags="rect")
 
 if __name__ == "__main__":
-    app = Gui("board1", 5)
+    app = Gui(5)
     app.mainloop()

@@ -21,5 +21,3 @@ class BaseEnvironment(object):
     @abc.abstractmethod
     def dist_between(self, node, successor):
         return
-
-
