@@ -8,6 +8,7 @@ class AStar():
         self.open_nodes = []
         self.closed_nodes = []
         self.search_method = search_method
+        self.finished = False
 
     def add_open(self, node):
         self.open_nodes.append(node)

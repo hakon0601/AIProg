@@ -1,7 +1,7 @@
 __author__ = 'hakon0601'
 
 from environment_base import BaseEnvironment
-
+import math
 
 class Board(BaseEnvironment):
     def __init__(self, filename, diagonal=False):
@@ -71,7 +71,10 @@ class Board(BaseEnvironment):
         return abs(x - self.goal[0]) + abs(y - self.goal[1])
 
     def dist_between(self, current_node, successor):
-        return 1
+        if current_node.x == successor.x or current_node.y == successor.y:
+            return 1
+        else:
+            return math.sqrt(2)
 
     def reconstruct_path(self, end_node):
         current_node = end_node.parent
