@@ -1,5 +1,5 @@
 __author__ = 'hakon0601'
-import tkinter as tk
+import Tkinter as tk
 import random
 import board
 import a_star
