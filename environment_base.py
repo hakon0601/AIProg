@@ -3,7 +3,8 @@ __author__ = 'hakon0601'
 import abc
 
 
-class BaseEnvironment(metaclass=abc.ABCMeta):
+class BaseEnvironment(object):
+    __metaclass__=abc.ABCMeta
 
     @abc.abstractmethod
     def get_start_node(self):

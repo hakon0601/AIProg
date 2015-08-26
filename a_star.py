@@ -33,12 +33,10 @@ class AStar():
         return min(self.open_nodes, key=operator.attrgetter('f_value'))
 
     def get_breadth_first_node(self):
-        #TODO
-        raise NotImplementedError
+        return self.open_nodes[0]
 
     def get_depth_first_node(self):
-        #TODO
-        raise NotImplementedError
+        return self.open_nodes[len(self.open_nodes) - 1]
 
 
     def generic_algorithm(self, environment):

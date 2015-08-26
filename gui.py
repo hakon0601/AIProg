@@ -1,30 +1,36 @@
 __author__ = 'hakon0601'
-import tkinter as tk
+import Tkinter as tk
 import random
 import board
 import a_star
 
 
 class Gui(tk.Tk):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, filename, delay, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
+        self.delay = delay
 
-        self.board = board.Board("board6")
-        self.a_star = a_star.AStar()
+        self.board = board.Board(filename)
+        self.a_star = a_star.AStar("Breadth-first")
 
+        self.B = tk.Button(self, text ="Start", command=self.start)
+        self.B.pack()
+
+    def start(self):
+        self.B.destroy()
         self.canvas = tk.Canvas(self, width=1000, height=1000, borderwidth=0, highlightthickness=0)
         self.canvas.pack(side="top", fill="both", expand="true")
         self.cellwidth = 25
         self.cellheight = 25
 
-
         self.rect = {}
-        self.draw_board()
+        #self.draw_board()
 
         self.a_star.do_first_step(self.board)
-        self.redraw(200)
+        self.redraw()
 
-    def redraw(self, delay):
+
+    def redraw(self):
         node = self.a_star.do_one_step(self.board)
         if not node:
             print("Failed")
@@ -36,9 +42,10 @@ class Gui(tk.Tk):
             self.draw_board()
         else:
             self.draw_board()
-            self.after(delay, lambda: self.redraw(delay))
+            self.after(self.delay, lambda: self.redraw())
 
     def draw_board(self):
+        self.canvas.delete("all")
         for y in range(self.board.dim[1]):
             for x in range(self.board.dim[0]):
                 x1 = x * self.cellwidth
@@ -62,5 +69,5 @@ class Gui(tk.Tk):
                 self.rect[y,x] = self.canvas.create_rectangle(x1,y1,x2,y2, fill=color, tags="rect")
 
 if __name__ == "__main__":
-    app = Gui()
+    app = Gui("board1", 5)
     app.mainloop()

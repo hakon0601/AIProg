@@ -54,14 +54,14 @@ class Board(BaseEnvironment):
 
     def get_successor_nodes(self, node):
         successors = []
-        if (node.y != 0 and self.board[node.y - 1][node.x].type != "X"):
-            successors.append(self.board[node.y - 1][node.x])
-        if (node.y != (self.dim[1] - 1) and self.board[node.y + 1][node.x].type != "X"):
-            successors.append(self.board[node.y + 1][node.x])
         if (node.x != 0 and self.board[node.y][node.x - 1].type != "X"):
             successors.append(self.board[node.y][node.x - 1])
+        if (node.y != (self.dim[1] - 1) and self.board[node.y + 1][node.x].type != "X"):
+            successors.append(self.board[node.y + 1][node.x])
         if (node.x != (self.dim[0] - 1) and self.board[node.y][node.x + 1].type != "X"):
             successors.append(self.board[node.y][node.x + 1])
+        if (node.y != 0 and self.board[node.y - 1][node.x].type != "X"):
+            successors.append(self.board[node.y - 1][node.x])
         if (self.diagonal):
             #TODO generate diagonal neighbours
             print("TODO diagonal get successors")
