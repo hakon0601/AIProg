@@ -39,7 +39,7 @@ class AStar():
         # return min(self.open_nodes, key=operator.attrgetter('g_value'))
 
     def find_depth_first_node(self):
-        return self.open_nodes[len(self.open_nodes) - 1]
+        return self.open_nodes[-1]
         # Alternatively
         # return min(self.open_nodes, key=operator.attrgetter('h_value'))
 

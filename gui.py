@@ -25,12 +25,12 @@ class Gui(tk.Tk):
 
     def create_menu(self):
         self.v = StringVar()
-        self.rb0 = tk.Button(self, text="Board 0", command=lambda:self.start("board0"))
-        self.rb1 = tk.Button(self, text="Board 1", command=lambda:self.start("board1"))
-        self.rb2 = tk.Button(self, text="Board 2", command=lambda:self.start("board2"))
-        self.rb3 = tk.Button(self, text="Board 3", command=lambda:self.start("board3"))
-        self.rb4 = tk.Button(self, text="Board 4", command=lambda:self.start("board4"))
-        self.rb5 = tk.Button(self, text="Board 5", command=lambda:self.start("board5"))
+        self.rb0 = tk.Button(self, text="Board 0", command=lambda:self.start("board0.txt"))
+        self.rb1 = tk.Button(self, text="Board 1", command=lambda:self.start("board1.txt"))
+        self.rb2 = tk.Button(self, text="Board 2", command=lambda:self.start("board2.txt"))
+        self.rb3 = tk.Button(self, text="Board 3", command=lambda:self.start("board3.txt"))
+        self.rb4 = tk.Button(self, text="Board 4", command=lambda:self.start("board4.txt"))
+        self.rb5 = tk.Button(self, text="Board 5", command=lambda:self.start("board5.txt"))
 
         self.rb0.pack(anchor=W)
         self.rb1.pack(anchor=W)
