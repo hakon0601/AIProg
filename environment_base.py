@@ -21,3 +21,7 @@ class BaseEnvironment(object):
     @abc.abstractmethod
     def movement_cost(self, node, successor):
         return
+
+    @abc.abstractmethod
+    def reconstruct_path(self, node):
+        return

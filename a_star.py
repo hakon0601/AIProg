@@ -31,7 +31,12 @@ class AStar():
             return self.find_depth_first_node()
 
     def find_best_first_node(self):
-        return min(self.open_nodes, key=operator.methodcaller('get_f'))
+        best_node = self.open_nodes[0]
+        for node in self.open_nodes:
+            if node.g_value + node.h_value < best_node.g_value + best_node.h_value:
+                best_node = node
+        return best_node
+        #return min(self.open_nodes, key=operator.methodcaller('get_f'))
 
     def find_breadth_first_node(self):
         return self.open_nodes[0]
@@ -67,12 +72,9 @@ class AStar():
                         self.add_open(successor)
         return None
 
-
-
     def do_first_step(self, environment):
         self.add_open(environment.get_start_node())
-        environment.get_start_node().g= 0
-        environment.get_start_node().f_value = environment.get_start_node().g_value + environment.get_start_node().h_value
+        environment.get_start_node().g_value = 0
 
     # Go through algorithm incrementally
     def do_one_step(self, environment):
@@ -91,7 +93,6 @@ class AStar():
                 if successor not in self.open_nodes or tentative_g < successor.g_value:
                     successor.parent = current_node
                     successor.g_value = tentative_g
-                    successor.f_value = tentative_g + successor.h_value
                     if successor not in self.open_nodes:
                         self.add_open(successor)
             # Means that the gui should continue calling the method
