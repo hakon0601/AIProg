@@ -31,12 +31,7 @@ class AStar():
             return self.find_depth_first_node()
 
     def find_best_first_node(self):
-        best_node = self.open_nodes[0]
-        for node in self.open_nodes:
-            if node.g_value + node.h_value < best_node.g_value + best_node.h_value:
-                best_node = node
-        return best_node
-        #return min(self.open_nodes, key=operator.methodcaller('get_f'))
+        return min(self.open_nodes, key=operator.methodcaller('get_f'))
 
     def find_breadth_first_node(self):
         return self.open_nodes[0]

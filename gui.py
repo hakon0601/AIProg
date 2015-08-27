@@ -25,7 +25,7 @@ class Gui(tk.Tk):
 
     def create_menu(self):
         self.v = StringVar()
-        self.rb0 = tk.Radiobutton(self, text="Board 0", value="board0", variable=self.v, command=self.start)
+        self.rb0 = tk.Radiobutton(self, text="Board 0", value="board0", variable=self.v)
         self.rb1 = tk.Radiobutton(self, text="Board 1", value="board1", variable=self.v, command=self.start)
         self.rb2 = tk.Radiobutton(self, text="Board 2", value="board2", variable=self.v, command=self.start)
         self.rb3 = tk.Radiobutton(self, text="Board 3", value="board3", variable=self.v, command=self.start)

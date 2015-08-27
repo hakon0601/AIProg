@@ -14,6 +14,9 @@ class Node():
     def get_f(self):
         return self.g_value + self.h_value
 
+    def __str__(self):
+        return self.type + " - (" + str(self.x) + ", " + str(self.y) + ")"
+
     '''
     Type O is free node
     Type X is obstacle node
