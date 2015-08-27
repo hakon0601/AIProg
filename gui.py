@@ -39,6 +39,24 @@ class Gui(tk.Tk):
         self.rb4.pack(anchor=W)
         self.rb5.pack(anchor=W)
 
+        # Enter start
+        self.startLabel = Label(self, text="Start: ")
+        self.startEntry = tk.Entry(self, bd =5)
+        self.startLabel.pack(anchor=W)
+        self.startEntry.pack(anchor=W)
+
+        # Enter end
+        self.endLabel = Label(self, text="End: ")
+        self.endEntry = tk.Entry(self, bd =5)
+        self.endLabel.pack(anchor=W)
+        self.endEntry.pack(anchor=W)
+
+        #Enter obstacle
+        self.obstacleLabel = Label(self, text="Obstacle: ")
+        self.obstacleEntry = tk.Entry(self, bd =5)
+        self.obstacleLabel.pack(anchor=W)
+        self.obstacleEntry.pack(anchor=W)
+
     def destroy_menu(self):
         self.rb0.destroy()
         self.rb1.destroy()
@@ -67,15 +85,33 @@ class Gui(tk.Tk):
         self.canvas = tk.Canvas(self, width=width, height=height, borderwidth=0, highlightthickness=0)
         self.canvas.pack(side="top", fill="both", expand="true")
 
-        button = tk.Button(self,text='back', command=self.create_menu)
-        button.pack()
+        self.backButton = tk.Button(self,text='back', command=self.back)
+        self.cancelButton = tk.Button(self,text='Cancel', command=self.cancel)
+        self.backButton.pack()
+        self.cancelButton.pack()
 
         for i in range(len(self.boards)):
             self.a_stars[i].do_first_step(self.boards[i])
         self.draw_board()
         self.run_a_star()
 
+    def back(self):
+        for widget in self.winfo_children():
+            widget.destroy()
 
+        # Restart counts
+        self.generated_node_count_texts[0] = "?"
+        self.generated_node_count_texts[1] = "?"
+        self.generated_node_count_texts[2] = "?"
+        self.path_len[0] = 0
+        self.path_len[1] = 0
+        self.path_len[2] = 0
+
+        # Back to menu
+        self.create_menu()
+    
+    def cancel(self):
+        self.destroy()
 
     def run_a_star(self):
         continuing = False
@@ -137,7 +173,10 @@ class Gui(tk.Tk):
         for i in range(3):
             self.canvas.itemconfig(self.search_methods[i], text=self.a_stars[i].search_method)
             self.canvas.itemconfig(self.generated_node_count_texts[i], text="Number of generated nodes: " + str(len(self.a_stars[i].open_nodes) + len(self.a_stars[i].closed_nodes)))
-            self.canvas.itemconfig(self.path_len_texts[i], text="Length of path: " + str(self.path_len[i]))
+            if self.path_len[i] == 0:
+                self.canvas.itemconfig(self.path_len_texts[i], text="Length of path: None")
+            else:
+                self.canvas.itemconfig(self.path_len_texts[i], text="Length of path: " + str(self.path_len[i]))
 
 
     def update_board(self):
