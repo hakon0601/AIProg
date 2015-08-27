@@ -25,12 +25,12 @@ class Gui(tk.Tk):
 
     def create_menu(self):
         self.v = StringVar()
-        self.rb0 = tk.Radiobutton(self, text="Board 0", value="board0", variable=self.v, command=self.start)
-        self.rb1 = tk.Radiobutton(self, text="Board 1", value="board1", variable=self.v, command=self.start)
-        self.rb2 = tk.Radiobutton(self, text="Board 2", value="board2", variable=self.v, command=self.start)
-        self.rb3 = tk.Radiobutton(self, text="Board 3", value="board3", variable=self.v, command=self.start)
-        self.rb4 = tk.Radiobutton(self, text="Board 4", value="board4", variable=self.v, command=self.start)
-        self.rb5 = tk.Radiobutton(self, text="Board 5", value="board5", variable=self.v, command=self.start)
+        self.rb0 = tk.Button(self, text="Board 0", command=lambda:self.start("board0"))
+        self.rb1 = tk.Button(self, text="Board 1", command=lambda:self.start("board1"))
+        self.rb2 = tk.Button(self, text="Board 2", command=lambda:self.start("board2"))
+        self.rb3 = tk.Button(self, text="Board 3", command=lambda:self.start("board3"))
+        self.rb4 = tk.Button(self, text="Board 4", command=lambda:self.start("board4"))
+        self.rb5 = tk.Button(self, text="Board 5", command=lambda:self.start("board5"))
 
         self.rb0.pack(anchor=W)
         self.rb1.pack(anchor=W)
@@ -47,10 +47,10 @@ class Gui(tk.Tk):
         self.rb4.destroy()
         self.rb5.destroy()
 
-    def start(self):
+    def start(self, boardnumber):
         self.destroy_menu()
 
-        self.board_best = Board(self.v.get(), False)
+        self.board_best = Board(str(boardnumber), False)
         self.board_breadth = copy.deepcopy(self.board_best)
         self.board_depth = copy.deepcopy(self.board_best)
         self.boards = [self.board_best, self.board_breadth, self.board_depth]
@@ -67,10 +67,15 @@ class Gui(tk.Tk):
         self.canvas = tk.Canvas(self, width=width, height=height, borderwidth=0, highlightthickness=0)
         self.canvas.pack(side="top", fill="both", expand="true")
 
+        button = tk.Button(self,text='back', command=self.create_menu)
+        button.pack()
+
         for i in range(len(self.boards)):
             self.a_stars[i].do_first_step(self.boards[i])
         self.draw_board()
         self.run_a_star()
+
+
 
     def run_a_star(self):
         continuing = False
