@@ -5,6 +5,7 @@ from board import Board
 from a_star import AStar
 import copy
 from time import sleep
+from tkFileDialog import askopenfilename
 
 from Tkinter import *
 
@@ -24,6 +25,9 @@ class Gui(tk.Tk):
         self.create_menu()
 
     def create_menu(self):
+        # Existing boards
+        self.info1 = Label(self, text="Choose an existing board: ")
+        self.info1.pack(anchor=W)
         self.v = StringVar()
         self.rb0 = tk.Button(self, text="Board 0", command=lambda:self.start("board0.txt"))
         self.rb1 = tk.Button(self, text="Board 1", command=lambda:self.start("board1.txt"))
@@ -31,7 +35,6 @@ class Gui(tk.Tk):
         self.rb3 = tk.Button(self, text="Board 3", command=lambda:self.start("board3.txt"))
         self.rb4 = tk.Button(self, text="Board 4", command=lambda:self.start("board4.txt"))
         self.rb5 = tk.Button(self, text="Board 5", command=lambda:self.start("board5.txt"))
-
         self.rb0.pack(anchor=W)
         self.rb1.pack(anchor=W)
         self.rb2.pack(anchor=W)
@@ -39,23 +42,27 @@ class Gui(tk.Tk):
         self.rb4.pack(anchor=W)
         self.rb5.pack(anchor=W)
 
-        # Enter start
-        self.startLabel = Label(self, text="Start: ")
-        self.startEntry = tk.Entry(self, bd =5)
-        self.startLabel.pack(anchor=W)
-        self.startEntry.pack(anchor=W)
+        # Or open a file
+        self.info2 = Label(self, text="Or open file with new board: ")
+        self.info2.pack(anchor=W)
+        self.openFileButton = tk.Button(self, text="Open file", command=self.openFile)
+        self.openFileButton.pack(anchor=W)
 
-        # Enter end
-        self.endLabel = Label(self, text="End: ")
-        self.endEntry = tk.Entry(self, bd =5)
-        self.endLabel.pack(anchor=W)
-        self.endEntry.pack(anchor=W)
+    def openFile(self):
+        filename = askopenfilename(parent=self)
+        print "filename"
+        print filename
+        f = open(filename)
+        f.read()
+        menubar = Menu(self)
+        filemenu = Menu(menubar, tearoff=0)
+        filemenu.add_command(label="Open", command=self.openFile)
+        filemenu.add_separator()
+        filemenu.add_command(label="Exit", command=self.quit)
+        menubar.add_cascade(label="File", menu=filemenu)
+        self.config(menu=menubar)
 
-        #Enter obstacle
-        self.obstacleLabel = Label(self, text="Obstacle: ")
-        self.obstacleEntry = tk.Entry(self, bd =5)
-        self.obstacleLabel.pack(anchor=W)
-        self.obstacleEntry.pack(anchor=W)
+        self.start(filename)
 
     def destroy_menu(self):
         self.rb0.destroy()
@@ -64,9 +71,14 @@ class Gui(tk.Tk):
         self.rb3.destroy()
         self.rb4.destroy()
         self.rb5.destroy()
+        self.info1.destroy()
+        self.info2.destroy()
+        self.openFileButton.destroy()
 
     def start(self, boardnumber):
         self.destroy_menu()
+        print "boardnumber"
+        print boardnumber
 
         self.board_best = Board(str(boardnumber), False)
         self.board_breadth = copy.deepcopy(self.board_best)
