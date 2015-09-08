@@ -14,18 +14,20 @@ class Gui(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
         self.title("A*")
         self.delay = delay
-
         self.cell_width = 25
         self.cell_height = 25
+        # path length for the different search methods, added when/if algorithm is finished
         self.path_len = [None, None, None]
+        # search methods that will run simultaneously 
         self.search_methods = [None, None, None]
+        # gui text for node count and path length
         self.generated_node_count_texts = [None, None, None]
         self.path_len_texts = [None, None, None]
 
         self.create_menu()
 
     def create_menu(self):
-        # Existing boards
+        # existing boards buttons
         self.info1 = Label(self, text="Choose an existing board: ")
         self.info1.pack(anchor=W)
         self.v = StringVar()
@@ -42,7 +44,7 @@ class Gui(tk.Tk):
         self.rb4.pack(anchor=W)
         self.rb5.pack(anchor=W)
 
-        # Or open a file
+        # or open a file
         self.info2 = Label(self, text="Or open file with new board: ")
         self.info2.pack(anchor=W)
         self.openFileButton = tk.Button(self, text="Open file", command=self.openFile)
@@ -62,6 +64,7 @@ class Gui(tk.Tk):
         menubar.add_cascade(label="File", menu=filemenu)
         self.config(menu=menubar)
 
+        # start with chosen file
         self.start(filename)
 
     def destroy_menu(self):
@@ -76,17 +79,21 @@ class Gui(tk.Tk):
         self.openFileButton.destroy()
 
     def start(self, boardnumber):
+        # destroy menu when algorithm illustrations begins
         self.destroy_menu()
-        print "boardnumber"
-        print boardnumber
 
+        # instances of the board, one for each search algorithm
         self.board_best = Board(str(boardnumber), False)
         self.board_breadth = copy.deepcopy(self.board_best)
         self.board_depth = copy.deepcopy(self.board_best)
         self.boards = [self.board_best, self.board_breadth, self.board_depth]
+
+        # initialize AStar instances for the search algorithms
         self.a_star_best = AStar("Best-first")
         self.a_star_breadth = AStar("Breadth-first")
         self.a_star_depth = AStar("Depth-first")
+
+        # add them to a list with all AStar instances
         self.a_stars = [self.a_star_best, self.a_star_breadth, self.a_star_depth]
         self.previous_open_lists = [[], [], []]
         self.previous_closed_lists = [[], [], []]
@@ -97,21 +104,27 @@ class Gui(tk.Tk):
         self.canvas = tk.Canvas(self, width=width, height=height, borderwidth=0, highlightthickness=0)
         self.canvas.pack(side="top", fill="both", expand="true")
 
+        # add back and cancel buttons to display
         self.backButton = tk.Button(self,text='back', command=self.back)
         self.cancelButton = tk.Button(self,text='Cancel', command=self.cancel)
         self.backButton.pack()
         self.cancelButton.pack()
 
+        # do first step for all AStar instances
         for i in range(len(self.boards)):
             self.a_stars[i].do_first_step(self.boards[i])
+        
         self.draw_board()
         self.run_a_star()
 
     def back(self):
+        # goes back to menu
+
+        # destroy current gui elements
         for widget in self.winfo_children():
             widget.destroy()
 
-        # Restart counts
+        # restart counts
         self.generated_node_count_texts[0] = "?"
         self.generated_node_count_texts[1] = "?"
         self.generated_node_count_texts[2] = "?"
@@ -119,22 +132,27 @@ class Gui(tk.Tk):
         self.path_len[1] = 0
         self.path_len[2] = 0
 
-        # Back to menu
+        # back to menu
         self.create_menu()
     
     def cancel(self):
+        # destroy window. quit program.
         self.destroy()
 
     def run_a_star(self):
         continuing = False
+        # go through the boards (one for each search algorithm)
         for i in range(len(self.boards)):
+            # if the algorithm is not finished upon the board, do one iteration of the algorithm
             if not self.a_stars[i].finished:
                 result = self.a_stars[i].do_one_step(self.boards[i])
                 if not result:
+                    # there are no more nodes in open nodes -> algorithm did not reach goal, fail
                     print("Failed")
                     self.a_stars[i].finished = True
                     continue
                 if result == 1:
+                    # the algorithm is not finished
                     continuing = True
                 else:
                     print("Success")
@@ -143,6 +161,8 @@ class Gui(tk.Tk):
                     self.draw_path(result, i, 0)
                     self.boards[i].print_board()
         self.update_board()
+        # as long as at least one of the algorithms is not finished, 
+        # run_a_star will be called over and over again
         if continuing:
             self.after(self.delay, lambda: self.run_a_star())
 
