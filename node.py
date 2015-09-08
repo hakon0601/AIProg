@@ -9,7 +9,6 @@ class Node():
         self.parent = None
         self.h_value = h_value
         self.g_value = float("inf")
-        self.f_value = float("inf")
 
     def get_f(self):
         return self.g_value + self.h_value
