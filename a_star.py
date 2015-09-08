@@ -1,5 +1,3 @@
-    __author__ = 'hakon0601'
-
 import operator
 
 
@@ -67,26 +65,30 @@ class AStar():
                         self.add_open(successor)
         return None
 
-    def do_first_step(self, environment):
-        self.add_open(environment.get_start_node())
-        environment.get_start_node().g_value = 0
+    def add_start_state_to_open(self, start_state):
+        self.add_open(start_state)
+        start_state.g_value = 0
 
     # Go through algorithm incrementally
-    def do_one_step(self, environment):
+    def do_one_step(self):
         if self.open_nodes:
             current_node = self.get_node_from_open()
-            if current_node.type == "G":
-                return environment.reconstruct_path(current_node)
+            # If the current node is the goal node
+            if current_node.h_value == 0:
+                return current_node.reconstruct_path()
             self.add_closed(current_node)
             self.remove_open(current_node)
-            successor_nodes = environment.get_successor_nodes(current_node)
+            # generate and get successor nodes
+            successor_nodes = current_node.generate_successor_nodes()
             for successor in successor_nodes:
                 if successor in self.closed_nodes:
                     continue
-                tentative_g = current_node.g_value + environment.movement_cost(current_node, successor)
+                tentative_g = current_node.g_value + current_node.movement_cost(successor)
                 # If the cost of getting to successor node is better from going through current
                 if successor not in self.open_nodes or tentative_g < successor.g_value:
                     successor.parent = current_node
+                    # TODO
+                    # multiple parents
                     successor.g_value = tentative_g
                     if successor not in self.open_nodes:
                         self.add_open(successor)
