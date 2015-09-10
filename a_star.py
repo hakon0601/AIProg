@@ -81,17 +81,22 @@ class AStar():
             # generate and get successor nodes
             successor_nodes = current_node.generate_successor_nodes()
             for successor in successor_nodes:
+                # if successor is closed, it is not relevant anymore
                 if successor in self.closed_nodes:
                     continue
+                # calculates successors g_value with the new parent
                 tentative_g = current_node.g_value + current_node.movement_cost(successor)
-                # If the cost of getting to successor node is better from going through current
-                if successor not in self.open_nodes or tentative_g < successor.g_value:
-                    successor.parent = current_node
-                    # TODO
-                    # multiple parents
+                # append parent to successor
+                successor.parents.append(current_node)
+                if successor in self.open_nodes:
+                    # updates successors g_value if it is better
+                    if tentative_g < successor.g_value:
+                        successor.g_value = tentative_g
+                else:
+                    # place successor in open node and set g_value (it is not yet explored)
+                    self.add_open(successor)
                     successor.g_value = tentative_g
-                    if successor not in self.open_nodes:
-                        self.add_open(successor)
+
             # Means that the gui should continue calling the method
             return 1
         return None

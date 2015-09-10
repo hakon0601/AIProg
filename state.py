@@ -1,10 +1,11 @@
 from math import sqrt
 
+
 class State():
     def __init__(self, x, y, board):
         self.x = x
         self.y = y
-        self.parent = None
+        self.parents = []
         self.board = board
         self.h_value = self.calculate_h(x, y, board.goal[0], board.goal[1])
         self.g_value = float("inf")
@@ -21,8 +22,8 @@ class State():
 
     def reconstruct_path(self):
         path = [self]
-        while path[-1].parent:
-            path.append(path[-1].parent)
+        while path[-1].parents:
+            path.append(path[-1].get_best_parent())
         return list(reversed(path))
 
     def generate_successor_nodes(self):
@@ -62,6 +63,14 @@ class State():
             return True
         else:
             return False
+
+    def get_best_parent(self):
+        best_parent = self.parents[0]
+        for parent in self.parents:
+            if parent.g_value + parent.movement_cost(self) < best_parent.g_value + best_parent.movement_cost(self):
+                best_parent = parent
+        return best_parent
+
 
 '''
 Type O is free node

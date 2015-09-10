@@ -14,6 +14,7 @@ class Gui(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
         self.title("A*")
         self.delay = delay
+        self.cells = None
         self.cell_width = 25
         self.cell_height = 25
         # path length for the different search methods, added when/if algorithm is finished
@@ -85,15 +86,13 @@ class Gui(tk.Tk):
         # instantiate the board
         self.board = Board(filename)
 
+        self.cells = {}
+
         # initialize AStar instances for the search algorithms
         self.a_stars = [AStar("Best-first"), AStar("Breadth-first"), AStar("Depth-first")]
 
-        self.previous_open_lists = [[], [], []]
-        self.previous_closed_lists = [[], [], []]
-
         # Dictionary containing all the graphic rectangle objects, indexed by (i, x, y) where i is the index
         # of that board-display and x and y are coordinates on that board
-        self.cells = {}
         # Number of boards times their width plus one cells in between each
         screen_width = (self.board.dim[0] + len(self.a_stars) - 1)*len(self.a_stars)*self.cell_width
         screen_height = (self.board.dim[1] + 4)*self.cell_height
@@ -215,17 +214,13 @@ class Gui(tk.Tk):
         for i in range(len(self.a_stars)):
             offset_x = (self.board.dim[0] + 1)*self.cell_width * i
             offset_y = self.cell_height
-            changed_in_open = [node for node in self.a_stars[i].open_nodes if node not in self.previous_open_lists]
-            changed_in_closed = [node for node in self.a_stars[i].closed_nodes if node not in self.previous_closed_lists]
-            self.previous_open_lists = self.a_stars[i].open_nodes
-            self.previous_closed_lists = self.a_stars[i].closed_nodes
-            for node in changed_in_open:
+            for node in self.a_stars[i].open_nodes:
                 x1 = node.x * self.cell_width + offset_x
                 y1 = self.board.dim[1]*self.cell_height - node.y * self.cell_height + offset_y
                 x2 = x1 + self.cell_width
                 y2 = y1 - self.cell_height
                 self.canvas.itemconfig(self.cells[i, node.y, node.x], fill="gray")
-            for node in changed_in_closed:
+            for node in self.a_stars[i].closed_nodes:
                 x1 = node.x * self.cell_width + offset_x
                 y1 = self.board.dim[1]*self.cell_height - node.y * self.cell_height + offset_y
                 x2 = x1 + self.cell_width
