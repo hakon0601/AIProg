@@ -29,41 +29,16 @@ class AStar():
             return self.find_depth_first_node()
 
     def find_best_first_node(self):
+        # Returns the open node with the lowest f value
         return min(self.open_nodes, key=operator.methodcaller('get_f'))
 
     def find_breadth_first_node(self):
+        # First-in-first-out
         return self.open_nodes[0]
-        # Alternatively
-        # return min(self.open_nodes, key=operator.attrgetter('g_value'))
 
     def find_depth_first_node(self):
+        # Last-in-first-out
         return self.open_nodes[-1]
-        # Alternatively
-        # return min(self.open_nodes, key=operator.attrgetter('h_value'))
-
-    # Algorithm for solving in one step/loop
-    def do_complete_algorithm(self, environment):
-        self.add_open(environment.get_start_node())
-        environment.get_start_node().g_value = 0
-        #Agenda loop while solution not found
-        while self.open_nodes:
-            current_node = self.get_node_from_open()
-            if current_node.type == "G":
-                return current_node
-            self.add_closed(current_node)
-            self.remove_open(current_node)
-            successor_nodes = environment.get_successor_nodes(current_node)
-            for successor in successor_nodes:
-                if successor in self.closed_nodes:
-                    continue
-                tentative_g = current_node.g_value + environment.movement_cost(current_node, successor)
-                # If the cost of getting to successor node is better from going through current
-                if successor not in self.open_nodes or tentative_g < successor.g_value:
-                    successor.parent = current_node
-                    successor.g_value = tentative_g
-                    if successor not in self.open_nodes:
-                        self.add_open(successor)
-        return None
 
     def add_start_state_to_open(self, start_state):
         self.add_open(start_state)
@@ -73,6 +48,9 @@ class AStar():
     def do_one_step(self):
         if self.open_nodes:
             current_node = self.get_node_from_open()
+            if self.search_method == "Best-first":
+                print(self.open_nodes)
+                print(current_node)
             # If the current node is the goal node
             if current_node.h_value == 0:
                 return current_node.reconstruct_path()
@@ -94,6 +72,8 @@ class AStar():
                         successor.g_value = tentative_g
                 else:
                     # place successor in open node and set g_value (it is not yet explored)
+                    if self.search_method == "Best-first":
+                        print("order: " + str(successor))
                     self.add_open(successor)
                     successor.g_value = tentative_g
 

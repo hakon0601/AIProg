@@ -10,10 +10,11 @@ import state
 from Tkinter import *
 
 class Gui(tk.Tk):
-    def __init__(self, delay, *args, **kwargs):
+    def __init__(self, delay, diagonal=False, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         self.title("A*")
         self.delay = delay
+        self.diagonal = diagonal
         self.cells = None
         self.cell_width = 25
         self.cell_height = 25
@@ -32,18 +33,16 @@ class Gui(tk.Tk):
         self.info1 = Label(self, text="Choose an existing board: ")
         self.info1.pack(anchor=W)
         self.v = StringVar()
-        self.rb0 = tk.Button(self, text="Board 0", command=lambda:self.start("board0.txt"))
-        self.rb1 = tk.Button(self, text="Board 1", command=lambda:self.start("board1.txt"))
-        self.rb2 = tk.Button(self, text="Board 2", command=lambda:self.start("board2.txt"))
-        self.rb3 = tk.Button(self, text="Board 3", command=lambda:self.start("board3.txt"))
-        self.rb4 = tk.Button(self, text="Board 4", command=lambda:self.start("board4.txt"))
-        self.rb5 = tk.Button(self, text="Board 5", command=lambda:self.start("board5.txt"))
-        self.rb0.pack(anchor=W)
-        self.rb1.pack(anchor=W)
-        self.rb2.pack(anchor=W)
-        self.rb3.pack(anchor=W)
-        self.rb4.pack(anchor=W)
-        self.rb5.pack(anchor=W)
+        self.buttons = [
+            tk.Button(self, text="Board 0", command=lambda:self.start("board0.txt")),
+            tk.Button(self, text="Board 1", command=lambda:self.start("board1.txt")),
+            tk.Button(self, text="Board 2", command=lambda:self.start("board2.txt")),
+            tk.Button(self, text="Board 3", command=lambda:self.start("board3.txt")),
+            tk.Button(self, text="Board 4", command=lambda:self.start("board4.txt")),
+            tk.Button(self, text="Board 5", command=lambda:self.start("board5.txt"))
+        ]
+        for btn in self.buttons:
+            btn.pack(anchor=W)
 
         # or open a file
         self.info2 = Label(self, text="Or open file with new board: ")
@@ -53,8 +52,6 @@ class Gui(tk.Tk):
 
     def openFile(self):
         filename = askopenfilename(parent=self)
-        print "filename"
-        print filename
         f = open(filename)
         f.read()
         menubar = Menu(self)
@@ -69,12 +66,9 @@ class Gui(tk.Tk):
         self.start(filename)
 
     def destroy_menu(self):
-        self.rb0.destroy()
-        self.rb1.destroy()
-        self.rb2.destroy()
-        self.rb3.destroy()
-        self.rb4.destroy()
-        self.rb5.destroy()
+        for btn in self.buttons:
+            btn.destroy()
+
         self.info1.destroy()
         self.info2.destroy()
         self.openFileButton.destroy()
@@ -82,9 +76,8 @@ class Gui(tk.Tk):
     def start(self, filename):
         # destroy menu when algorithm illustrations begins
         self.destroy_menu()
-
         # instantiate the board
-        self.board = Board(filename)
+        self.board = Board(filename, self.diagonal)
 
         self.cells = {}
 
@@ -105,12 +98,13 @@ class Gui(tk.Tk):
         self.backButton.pack()
         self.cancelButton.pack()
 
+        self.draw_board()
+
         # Adding the start state to open-list for all AStar instances
         for i in range(len(self.a_stars)):
             start_state = state.State(self.board.start[0], self.board.start[1], self.board)
             self.a_stars[i].add_start_state_to_open(start_state)
-        
-        self.draw_board()
+
         self.run_a_star()
 
     def back(self):
@@ -121,12 +115,8 @@ class Gui(tk.Tk):
             widget.destroy()
 
         # restart counts
-        self.generated_node_count_texts[0] = "?"
-        self.generated_node_count_texts[1] = "?"
-        self.generated_node_count_texts[2] = "?"
-        self.path_len[0] = 0
-        self.path_len[1] = 0
-        self.path_len[2] = 0
+        self.generated_node_count_texts = [None, None, None]
+        self.path_len = [None, None, None]
 
         # back to menu
         self.create_menu()
@@ -153,7 +143,7 @@ class Gui(tk.Tk):
                 else:
                     print("Success")
                     self.a_stars[i].finished = True
-                    self.path_len[i] = len(result)
+                    self.path_len[i] = round(result[-1].g_value * 10, 2)
                     self.draw_path(result, i, 0)
         self.update_board()
         # as long as at least one of the algorithms is not finished, 
@@ -209,18 +199,23 @@ class Gui(tk.Tk):
             else:
                 self.canvas.itemconfig(self.path_len_texts[i], text="Length of path: " + str(self.path_len[i]))
 
-
     def update_board(self):
         for i in range(len(self.a_stars)):
             offset_x = (self.board.dim[0] + 1)*self.cell_width * i
             offset_y = self.cell_height
             for node in self.a_stars[i].open_nodes:
+                # Avoid drawing over start and goal
+                if node.g_value == 0 or node.h_value == 0:
+                    continue
                 x1 = node.x * self.cell_width + offset_x
                 y1 = self.board.dim[1]*self.cell_height - node.y * self.cell_height + offset_y
                 x2 = x1 + self.cell_width
                 y2 = y1 - self.cell_height
                 self.canvas.itemconfig(self.cells[i, node.y, node.x], fill="gray")
             for node in self.a_stars[i].closed_nodes:
+                # Avoid drawing over start and goal
+                if node.g_value == 0 or node.h_value == 0:
+                    continue
                 x1 = node.x * self.cell_width + offset_x
                 y1 = self.board.dim[1]*self.cell_height - node.y * self.cell_height + offset_y
                 x2 = x1 + self.cell_width
@@ -242,5 +237,5 @@ class Gui(tk.Tk):
 
 
 if __name__ == "__main__":
-    app = Gui(5)
+    app = Gui(delay=50, diagonal=False)
     app.mainloop()

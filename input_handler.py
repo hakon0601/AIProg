@@ -1,6 +1,5 @@
 __author__ = 'hakon0601'
 
-from obstacle import Obstacle
 
 def read_file(board, filename):
     with open(filename) as f:

@@ -1,14 +1,12 @@
-__author__ = 'hakon0601'
-
 import input_handler
 
 
 class Board():
-    def __init__(self, filename):
+    def __init__(self, filename, diagonal=False):
         self.obstacles = []
         self.board = []
         self.dim = self.start = self.goal = (0, 0)
-        self.path_len = None
+        self.diagonal = diagonal
         if filename:
             input_handler.read_file(self, filename)
         else:
@@ -31,3 +29,10 @@ class Board():
     def print_board(self):
         for board_row in reversed(self.board):
             print([node for node in board_row])
+
+'''
+Type O is free node
+Type X is obstacle node
+Type G is goal node
+Type S is start node
+'''
