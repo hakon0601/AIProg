@@ -60,8 +60,19 @@ class State(state_base.BaseState):
         else:
             return False
 
+    def __lt__(self, other):
+        if self.get_f() < other.get_f():
+            return True
+        elif self.get_f() > other.get_f():
+            return False
+        else:
+            if self.h_value <= other.h_value:
+                return True
+            else:
+                return False
+
     def __str__(self):
-        return "(" + str(self.x) + "," + str(self.y) + ") - f: " + str(self.get_f())
+        return "(" + str(self.x) + "," + str(self.y) + ") - f: " + str(self.get_f()) + " , h: " + str(self.h_value)
 
     def __repr__(self):
         return self.__str__()
