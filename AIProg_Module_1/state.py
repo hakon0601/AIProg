@@ -17,9 +17,9 @@ class State(state_base.BaseState):
 
     # Manhattan distance
     def calculate_h(self, x, y, goal_x, goal_y):
-        if not self.board.diagonal:
-            return abs(x - goal_x) + abs(y - goal_y)
-        return sqrt(abs(self.x - goal_x) + abs(self.y - goal_y))
+        if self.board.diagonal:
+            return sqrt(pow(self.x - goal_x, 2) + pow(self.y - goal_y, 2))
+        return abs(x - goal_x) + abs(y - goal_y)
 
     def reconstruct_path(self):
         path = [self]

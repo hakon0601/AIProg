@@ -1,5 +1,3 @@
-__author__ = 'hakon0601'
-
 
 def read_file(board, filename):
     with open(filename) as f:
