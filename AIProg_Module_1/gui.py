@@ -1,13 +1,11 @@
 import Tkinter as tk
-import random
+from tkFileDialog import askopenfilename
+from Tkinter import *
+
 from board import Board
 from a_star import AStar
-import copy
-from time import sleep
-from tkFileDialog import askopenfilename
-import state
+from state import State
 
-from Tkinter import *
 
 class Gui(tk.Tk):
     def __init__(self, delay, diagonal=False, *args, **kwargs):
@@ -102,7 +100,7 @@ class Gui(tk.Tk):
 
         # Adding the start state to open-list for all AStar instances
         for i in range(len(self.a_stars)):
-            start_state = state.State(self.board.start[0], self.board.start[1], self.board)
+            start_state = State(self.board.start[0], self.board.start[1], self.board)
             self.a_stars[i].add_start_state_to_open(start_state)
 
         self.run_a_star()

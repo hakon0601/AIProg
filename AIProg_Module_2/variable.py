@@ -8,7 +8,7 @@ class Variable():
         self.domain = [x for x in range(k)]
 
     def __str__(self):
-        return str(self.index) + " - (" + str(self.x) + "," + str(self.y) + ") - " + self.domain
+        return str(self.index) + " - (" + str(self.x) + "," + str(self.y) + ") - " + str(self.domain)
 
 
     def __repr__(self):
