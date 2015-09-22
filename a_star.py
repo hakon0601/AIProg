@@ -54,6 +54,7 @@ class AStar():
     def do_one_step(self):
         if self.open_nodes:
             current_node = self.get_node_from_open()
+            print "current_node: " + str(current_node)
             # If the current node is the goal node
             if current_node.h_value == 0:
                 print "Done"
@@ -74,8 +75,8 @@ class AStar():
                     if tentative_g < successor.g_value:
                         self.propagate(successor, tentative_g)
                 else:
-                    if self.search_method == "Best-first":
-                        print("order: " + str(successor))
+                    #if self.search_method == "Best-first":
+                        #print("order: " + str(successor))
                     # place successor in open node and set g_value (it is not yet explored)
                     successor.g_value = tentative_g
                     self.add_open(successor)
