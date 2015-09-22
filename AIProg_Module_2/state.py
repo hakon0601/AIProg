@@ -6,12 +6,13 @@ import constraint
 from copy import deepcopy
 
 class State(state_base.BaseState):
-    def __init__(self, constraints):
+    def __init__(self, constraints, csp):
+        self.constraints = constraints
+        self.csp = csp
         self.variable_dict = {}
         self.parents = []
         self.h_value = self.calculate_h()
         self.g_value = float("inf")
-        self.constraints = constraints
 
     def get_f(self):
         return self.g_value + self.h_value
@@ -42,10 +43,15 @@ class State(state_base.BaseState):
         successors = []
         for variable in self.variable_dict.values():
             for value in variable.domain:
-                successor_state = State(self.constraints)
+                successor_state = State(self.constraints, self.csp)
                 successor_variable_dict = deepcopy(self.variable_dict)
-                successor_variable_dict[variable.index].domain.remove(value)
-                successor_state.variable_dict =successor_variable_dict
+                successor_variable_dict[variable.index].domain = [value]
+                successor_state.variable_dict = successor_variable_dict
+
+                successor_state.csp.init_revise_queue(self.constraints, successor_state.variable_dict)
+                successor_state.csp.domain_filtering_loop(successor_state.variable_dict)
+                successor_state.h_value = successor_state.calculate_h()
+
                 successors.append(successor_state)
 
         return successors
