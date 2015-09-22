@@ -6,8 +6,10 @@ class Variable():
         self.x = x
         self.y = y
         self.domain = [x for x in range(k)]
+        self.involved_constraints = []
 
     def __str__(self):
+        return str(self.index) + " - " + str(self.domain)
         return str(self.index) + " - (" + str(self.x) + "," + str(self.y) + ") - " + str(self.domain)
 
 

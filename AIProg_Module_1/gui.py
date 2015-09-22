@@ -80,7 +80,7 @@ class Gui(tk.Tk):
         self.cells = {}
 
         # initialize AStar instances for the search algorithms
-        self.a_stars = [AStar("Best-first"), AStar("Breadth-first"), AStar("Depth-first")]
+        self.a_stars = [AStar(search_method="Best-first"), AStar(search_method="Breadth-first"), AStar(search_method="Depth-first")]
 
         # Dictionary containing all the graphic rectangle objects, indexed by (i, x, y) where i is the index
         # of that board-display and x and y are coordinates on that board

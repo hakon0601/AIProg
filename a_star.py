@@ -2,13 +2,12 @@ import operator
 from heapq import heappush, heappop, heapify
 
 class AStar():
-    def __init__(self, search_method):
+    def __init__(self, search_method="Best-first"):
         self.open_nodes = []
         if search_method == "Best-first": heapify(self.open_nodes)
         self.closed_nodes = []
         self.search_method = search_method
         self.finished = False
-
 
     def add_open(self, node):
         if self.search_method == "Best-first":
@@ -31,9 +30,8 @@ class AStar():
             return self.find_depth_first_node()
 
     def find_best_first_node(self):
-        # Returns the open node with the lowest f value
+        # Returns the open node with the lowest f value. If two have the same f, order by h
         return heappop(self.open_nodes)
-        #return min(self.open_nodes, key=operator.methodcaller('get_f'))
 
     def find_breadth_first_node(self):
         # First-in-first-out
@@ -55,13 +53,10 @@ class AStar():
     # Go through algorithm incrementally
     def do_one_step(self):
         if self.open_nodes:
-            if self.search_method == "Best-first":
-                print(self.open_nodes)
             current_node = self.get_node_from_open()
-            if self.search_method == "Best-first":
-                print(current_node)
             # If the current node is the goal node
             if current_node.h_value == 0:
+                print "Done"
                 return current_node.reconstruct_path()
             self.add_closed(current_node)
             # generate and get successor nodes

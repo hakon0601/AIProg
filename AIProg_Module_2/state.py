@@ -3,6 +3,7 @@
 from math import sqrt
 import state_base
 import constraint
+from copy import deepcopy
 
 class State(state_base.BaseState):
     def __init__(self, constraints):
@@ -16,18 +17,11 @@ class State(state_base.BaseState):
         return self.g_value + self.h_value
 
     def calculate_h(self):
-        return
+        tentative_h = 0
+        for variable in self.variable_dict.values():
+            tentative_h += (len(variable.domain) - 1)
+        return tentative_h
 
-    def revise(self):
-        for key in self.variable_dict.keys():
-            tentative_domain = []
-            variable = self.variable_dict[key]
-            for value in variable.domain:
-                if not self.is_value_breaking_constraints(variable, value):
-                    continue
-                else:
-                    tentative_domain.append(value)
-            variable.domain = tentative_domain
 
     def is_value_breaking_constraints(self, variable, value):
         for constr in self.constraints:
@@ -46,6 +40,14 @@ class State(state_base.BaseState):
 
     def generate_successor_nodes(self):
         successors = []
+        for variable in self.variable_dict.values():
+            for value in variable.domain:
+                successor_state = State(self.constraints)
+                successor_variable_dict = deepcopy(self.variable_dict)
+                successor_variable_dict[variable.index].domain.remove(value)
+                successor_state.variable_dict =successor_variable_dict
+                successors.append(successor_state)
+
         return successors
 
     def movement_cost(self, successor):
@@ -60,5 +62,26 @@ class State(state_base.BaseState):
     def __repr__(self):
         return self.__str__()
 
+    def __lt__(self, other):
+        if self.get_f() < other.get_f():
+            return True
+        elif self.get_f() > other.get_f():
+            return False
+        else:
+            if self.h_value <= other.h_value:
+                return True
+            else:
+                return False
+
     def get_best_parent(self):
         return
+
+    def is_solution_or_contradictory(self):
+        for variable in self.variable_dict.values():
+            # Contradictory
+            if len(variable.domain) == 0:
+                return True
+            # Not a solution
+            elif len(variable.domain) != 1:
+                return False
+        return True

@@ -2,8 +2,11 @@
 
 from state import State
 import input_handler
+from csp import CSP
+from a_star import AStar
 
-variable_dict, constraints = input_handler.read_file("graph-color-1.txt")
+
+variable_dict, constraints = input_handler.read_file("graph0.txt")
 
 
 print(variable_dict)
@@ -12,6 +15,22 @@ print(constraints)
 initial_state = State(constraints)
 initial_state.variable_dict = variable_dict
 
-initial_state.revise()
-print(initial_state.variable_dict)
+a_star = AStar()
+a_star.add_open(initial_state)
 
+initial_state.variable_dict[0].domain = [0]
+#initial_state.variable_dict[2].domain = [0, 1]
+
+csp = CSP(initial_state.constraints)
+csp.domain_filtering_loop()
+
+while True:
+    if initial_state.is_solution_or_contradictory():
+        print "Finished " + str(initial_state.variable_dict)
+        exit(1)
+    else:
+         a_star.do_one_step()
+
+
+
+print(initial_state.variable_dict)

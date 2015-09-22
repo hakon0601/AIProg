@@ -1,17 +1,22 @@
 
 
 class Constraint():
-    def __init__(self, index_1, index_2):
+    def __init__(self, involved_variables=[]):
         # Index of vertex on one side, and index of vertex on the other side.
-        self.index_1 = index_1
-        self.index_2 = index_2
+        self.involved_variables = involved_variables
+        for variable in involved_variables:
+            variable.involved_constraints.append(self)
 
     def __str__(self):
-        return str(self.index_1) + " - " + str(self.index_2)
+        s = ""
+        for v in self.involved_variables:
+            s += str(v.index) + " - "
+        s = s[0:-2]
+        return s
 
     def __repr__(self):
         return str(self)
-
+'''
     def has_variable(self, variable):
         if self.index_1 == variable.index or self.index_2 == variable.index:
             return True
@@ -23,3 +28,4 @@ class Constraint():
         elif self.index_2 == variable.index:
             return self.index_1
         return None
+'''
