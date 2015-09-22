@@ -41,15 +41,22 @@ class State(state_base.BaseState):
 
     def generate_successor_nodes(self):
         successors = []
+        # Generate one successor for every possible singleton domain for each variable
         for variable in self.variable_dict.values():
             for value in variable.domain:
                 successor_state = State(self.constraints, self.csp)
                 successor_variable_dict = deepcopy(self.variable_dict)
+
+                # Enforcing the assumption by reducing the domain of the assumed
+                # variable to a singleton set (only one value)
                 successor_variable_dict[variable.index].domain = [value]
                 successor_state.variable_dict = successor_variable_dict
 
+                # = GAC rerun
                 successor_state.csp.init_revise_queue(self.constraints, successor_state.variable_dict)
                 successor_state.csp.domain_filtering_loop(successor_state.variable_dict)
+
+                # Calulate h after domain reductions
                 successor_state.h_value = successor_state.calculate_h()
 
                 successors.append(successor_state)
