@@ -7,7 +7,7 @@ def read_file(filename):
         content = f.readlines()
 
     filename_k_dict = {"graph0.txt": 3, "graph1.txt": 3, "graph-color-1.txt": 4, "graph-color-2.txt": 4,
-                       "rand-50-4-color1.txt": 4, "rand-100-4-color1.txt": 4, "rand-100-6-color1.txt": 6, "rand-500-4-color1.txt": 4}
+                       "rand-50-4-color1.txt": 4, "rand-100-4-color1.txt": 4, "rand-100-6-color1.txt": 6, "spiral-500-4-color1.txt": 4}
     #k = int(raw_input("k: "))
 
     k = filename_k_dict[filename]

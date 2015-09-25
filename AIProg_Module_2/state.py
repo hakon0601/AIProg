@@ -4,6 +4,8 @@ from math import sqrt
 import state_base
 import constraint
 from copy import deepcopy
+from sys import setrecursionlimit
+setrecursionlimit(10000)
 
 class State(state_base.BaseState):
     def __init__(self, constraints, variable_dict, csp):
@@ -11,18 +13,21 @@ class State(state_base.BaseState):
         self.csp = csp
         self.variable_dict = variable_dict
         self.parents = []
-        self.h_value = self.calculate_h()
+        self.children = []
+        self.h_value = float("inf")
         self.g_value = float("inf")
 
     def get_f(self):
         return self.g_value + self.h_value
+
+    def getID(self):
+        return self.__hash__()
 
     def calculate_h(self):
         tentative_h = 0
         for variable in self.variable_dict.values():
             tentative_h += (len(variable.domain) - 1)
         return tentative_h
-
 
     def is_value_breaking_constraints(self, variable, value):
         for constr in self.constraints:
@@ -92,6 +97,9 @@ class State(state_base.BaseState):
                 return True
             else:
                 return False
+
+    def __hash__(self):
+        return hash(repr(sorted(self.variable_dict.items())))
 
     def get_best_parent(self):
         best_parent = self.parents[0]

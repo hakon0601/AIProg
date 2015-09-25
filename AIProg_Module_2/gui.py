@@ -6,12 +6,11 @@ from csp import CSP
 from a_star import AStar
 
 
-variable_dict, constraints = input_handler.read_file("graph-color-1.txt")
+variable_dict, constraints = input_handler.read_file("spiral-500-4-color1.txt")
 
 
 
 initial_state = State(constraints, variable_dict, CSP())
-initial_state.g_value = 0
 
 print "init State: " + str(initial_state)
 
@@ -24,7 +23,7 @@ initial_state.csp.domain_filtering_loop(initial_state.variable_dict)
 print "refined init State: " + str(initial_state)
 
 a_star = AStar()
-a_star.add_open(initial_state)
+a_star.add_start_state_to_open(initial_state)
 
 
 def run_a_star():

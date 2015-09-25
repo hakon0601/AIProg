@@ -9,17 +9,26 @@ class State(state_base.BaseState):
         self.y = y
         self.parents = []
         self.board = board
-        self.h_value = self.calculate_h(x, y, board.goal[0], board.goal[1])
+        self.h_value = float("inf")
         self.g_value = float("inf")
+        self.children = []
 
     def get_f(self):
         return self.g_value + self.h_value
 
+    def getID(self):
+        return self.__hash__()
+
+    def __hash__(self):
+        return hash((self.x, self.y))
+
     # Manhattan distance
-    def calculate_h(self, x, y, goal_x, goal_y):
+    def calculate_h(self):
+        goal_x = self.board.goal[0]
+        goal_y = self.board.goal[1]
         if self.board.diagonal:
             return sqrt(pow(self.x - goal_x, 2) + pow(self.y - goal_y, 2))
-        return abs(x - goal_x) + abs(y - goal_y)
+        return abs(self.x - goal_x) + abs(self.y - goal_y)
 
     def reconstruct_path(self):
         path = [self]

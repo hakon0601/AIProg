@@ -23,3 +23,7 @@ class BaseState(object):
     @abc.abstractmethod
     def get_best_parent(self):
         return
+
+    @abc.abstractmethod
+    def getID(self):
+        return
