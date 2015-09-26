@@ -23,6 +23,7 @@ class Gui(tk.Tk):
         # gui text for node count and path length
         self.generated_node_count_texts = [None, None, None]
         self.path_len_texts = [None, None, None]
+        self.paths = [None, None, None]
 
         self.create_menu()
 
@@ -135,16 +136,19 @@ class Gui(tk.Tk):
                     print("Failed")
                     self.a_stars[i].finished = True
                     continue
-                if result == 1:
+                if result.h_value != 1:
                     # the algorithm is not finished
                     continuing = True
                 else:
                     print("Success")
                     self.a_stars[i].finished = True
-                    self.path_len[i] = round(result[-1].g_value * 10, 2)
-                    self.draw_path(result, i, 0)
+                    self.path_len[i] = round(result.g_value * 10, 2)
+                self.paths[i] = result
         self.update_board()
-        # as long as at least one of the algorithms is not finished, 
+        for i in range(len(self.paths)):
+            if self.paths[i]:
+                self.draw_path(self.paths[i], i)
+        # as long as at least one of the algorithms is not finished,
         # run_a_star will be called over and over again
         if continuing:
             self.after(self.delay, lambda: self.run_a_star())
@@ -221,17 +225,10 @@ class Gui(tk.Tk):
                 self.canvas.itemconfig(self.cells[i, node.y, node.x], fill="red")
             self.update_text(i)
 
-    def draw_path(self, path, i, j):
-        offset_x = (self.board.dim[0] + 1)*self.cell_width * i
-        node = path[j]
-        x1 = node.x * self.cell_width + offset_x
-        y1 = self.board.dim[1]*self.cell_height - node.y * self.cell_height + self.cell_height
-        x2 = x1 + self.cell_width
-        y2 = y1 - self.cell_height
-
-        self.canvas.create_oval(x1,y1,x2,y2, fill="green", tags="oval")
-        if j < (len(path) - 1):
-            self.after(100, lambda: self.draw_path(path, i, j+1))
+    def draw_path(self, current_state, i):
+        path = current_state.reconstruct_path()
+        for node in path:
+            self.canvas.itemconfig(self.cells[i, node.y, node.x], fill="green")
 
 
 if __name__ == "__main__":

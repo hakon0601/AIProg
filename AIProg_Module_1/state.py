@@ -7,7 +7,7 @@ class State(state_base.BaseState):
     def __init__(self, x, y, board):
         self.x = x
         self.y = y
-        self.parents = []
+        self.parent = None
         self.board = board
         self.h_value = float("inf")
         self.g_value = float("inf")
@@ -32,8 +32,8 @@ class State(state_base.BaseState):
 
     def reconstruct_path(self):
         path = [self]
-        while path[-1].parents:
-            path.append(path[-1].get_best_parent())
+        while path[-1].parent:
+            path.append(path[-1].parent)
         return list(reversed(path))
 
     def generate_successor_nodes(self):
@@ -85,10 +85,3 @@ class State(state_base.BaseState):
 
     def __repr__(self):
         return self.__str__()
-
-    def get_best_parent(self):
-        best_parent = self.parents[0]
-        for parent in self.parents:
-            if parent.g_value + parent.movement_cost(self) < best_parent.g_value + best_parent.movement_cost(self):
-                best_parent = parent
-        return best_parent

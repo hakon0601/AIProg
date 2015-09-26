@@ -12,7 +12,7 @@ class State(state_base.BaseState):
         self.constraints = constraints
         self.csp = csp
         self.variable_dict = variable_dict
-        self.parents = []
+        self.parent = None
         self.children = []
         self.h_value = float("inf")
         self.g_value = float("inf")
@@ -43,32 +43,35 @@ class State(state_base.BaseState):
 
     def reconstruct_path(self):
         path = [self]
-        while path[-1].parents:
-            path.append(path[-1].get_best_parent())
+        while path[-1].parent:
+            path.append(path[-1].parent)
         return list(reversed(path))
 
     def generate_successor_nodes(self):
         successors = []
         # Generate one successor for every possible singleton domain for each variable
+        variable_with_smallest_domain = None
         for variable in self.variable_dict.values():
-            if len(variable.domain) != 1:
-                for value in variable.domain:
-                    successor_variable_dict = deepcopy(self.variable_dict)
+            if (not variable_with_smallest_domain or len(variable.domain) < len(variable_with_smallest_domain.domain)):
+                if len(variable.domain) != 1:
+                    variable_with_smallest_domain = variable
+        print "variable with smallest domain: " + str(variable_with_smallest_domain)
+        for value in variable_with_smallest_domain.domain:
+            successor_variable_dict = deepcopy(self.variable_dict)
 
-                    # Enforcing the assumption by reducing the domain of the assumed
-                    # variable to a singleton set (only one value)
-                    successor_variable_dict[variable.index].domain = [value]
-                    successor_state = State(self.constraints, successor_variable_dict, self.csp)
+            # Enforcing the assumption by reducing the domain of the assumed
+            # variable to a singleton set (only one value)
+            successor_variable_dict[variable_with_smallest_domain.index].domain = [value]
+            successor_state = State(self.constraints, successor_variable_dict, self.csp)
 
-                    # = GAC rerun
-                    successor_state.csp.init_revise_queue(self.constraints, successor_state.variable_dict)
-                    successor_state.csp.domain_filtering_loop(successor_state.variable_dict)
+            # = GAC rerun
+            successor_state.csp.init_revise_queue(self.constraints, successor_state.variable_dict)
+            successor_state.csp.domain_filtering_loop(successor_state.variable_dict)
 
-                    # Calulate h after domain reductions
-                    successor_state.h_value = successor_state.calculate_h()
+            # Calulate h after domain reductions
+            successor_state.h_value = successor_state.calculate_h()
 
-                    successors.append(successor_state)
-
+            successors.append(successor_state)
         return successors
 
     def movement_cost(self, successor):
@@ -100,13 +103,6 @@ class State(state_base.BaseState):
 
     def __hash__(self):
         return hash(repr(sorted(self.variable_dict.items())))
-
-    def get_best_parent(self):
-        best_parent = self.parents[0]
-        for parent in self.parents:
-            if parent.g_value + parent.movement_cost(self) < best_parent.g_value + best_parent.movement_cost(self):
-                best_parent = parent
-        return best_parent
 
     def is_solution_or_contradictory(self):
         for variable in self.variable_dict.values():

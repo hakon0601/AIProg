@@ -9,7 +9,7 @@ class Variable():
         self.involved_constraints = []
 
     def __str__(self):
-        return str(self.index) + " - " + str(self.domain)
+        #return str(self.index) + " - " + str(self.domain)
         return str(self.index) + " - (" + str(self.x) + "," + str(self.y) + ") - " + str(self.domain)
 
 

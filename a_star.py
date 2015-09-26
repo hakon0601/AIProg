@@ -59,13 +59,13 @@ class AStar():
         for child_state in successor.children:
             tentative_g = successor.g_value + successor.movement_cost(child_state)
             if tentative_g < child_state.g_value:
-                child_state.parents.append(successor)
+                child_state.parent = successor
                 child_state.g_value = successor.g_value + successor.movement_cost(child_state)
                 self.propagate_path_improvement(child_state)
 
 
     def attach_and_eval(self, successor, current_node):
-        successor.parents.append(current_node)
+        successor.parent = current_node
         successor.g_value = current_node.g_value + current_node.movement_cost(successor)
         successor.h_value = successor.calculate_h()
 
@@ -73,14 +73,15 @@ class AStar():
     def do_one_step(self):
         if self.open_nodes:
             current_node = self.get_node_from_open()
-            print current_node
+            print "selected state: " + str(current_node)
             self.add_closed(current_node)
             # If the current node is the goal node
             if current_node.h_value == 0:
                 print "Done"
-                return current_node.reconstruct_path()
+                return current_node
             # generate and get successor nodes
             successor_nodes = current_node.generate_successor_nodes()
+            print "successors: " + str(successor_nodes)
             for successor in successor_nodes:
                 if self.generated_states[successor.getID()]:
                     successor = self.generated_states[successor.getID()]
@@ -101,7 +102,7 @@ class AStar():
 
                 current_node.children.append(successor)
 
-            return 1
+            return current_node
         return None
         '''
                 # TODO remove whats left of method
