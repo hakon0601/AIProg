@@ -83,6 +83,7 @@ class AStar():
             successor_nodes = current_node.generate_successor_nodes()
             print "successors: " + str(successor_nodes)
             for successor in successor_nodes:
+                # If the successor is already generated
                 if self.generated_states[successor.getID()]:
                     successor = self.generated_states[successor.getID()]
 
@@ -94,6 +95,8 @@ class AStar():
                         if self.search_method == "Best-first":
                             self.open_nodes.sort()
                 else:
+                    # Successor is not generated
+                    # Defaultdict will create new item (instead of error) since key is not there
                     self.generated_states[successor.getID()] = successor
                     self.attach_and_eval(successor, current_node)
                     self.add_open(successor)
