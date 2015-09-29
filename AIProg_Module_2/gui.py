@@ -1,12 +1,11 @@
-
 import Tkinter as tk
-from tkFileDialog import askopenfilename
 from Tkinter import *
-from state import State
+from tkFileDialog import askopenfilename
+
 import input_handler
-from csp import CSP
+from AIProg_Module_2.csp import CSP
 from a_star import AStar
-from os import listdir
+from state import State
 
 
 class Gui(tk.Tk):

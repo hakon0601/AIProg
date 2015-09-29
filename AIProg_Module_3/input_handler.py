@@ -6,37 +6,53 @@ def read_file(filename):
         content = f.readlines()
 
     nr_of_rows, nr_of_columns = map(int, content[0].rstrip().split(" "))
-
-    print str(nr_of_rows) + " - " + str(nr_of_columns)
+    domain = (nr_of_rows, nr_of_columns)
 
     variable_dict = {}
+    constraints = []
 
     # Add all row segments as variables
-    for i in range(1, nr_of_rows+2):
+    for i in range(1, nr_of_columns+1):
+        index = i-1
         segments = map(int, content[i].rstrip().split(" "))
         segments_on_that_row = []
         for j in range(len(segments)):
-            # i-1 is the index
             # segments[j] is the segment length
-            # nr_of_columns = domain = possible start points
-            variable = Variable("row", i-1, str(j), segments[j], nr_of_columns)
-            #print variable
+            # nr_of_columns = domain = possible start points. Initial: All possibilities
+            variable = Variable("row", index, str(j), segments[j], nr_of_rows)
             variable_dict[variable] = variable
             segments_on_that_row.append(variable)
-        # TODO Add constraints
-        # Send all segments on that row as parameter to constraint
-        # OBS variable_dict is not complete yet
-        constraint = Constraint(i-1, variable_dict, segments_on_that_row)
+        # Create a constraint for each neighbour pair of segments
+        seg_count = len(segments_on_that_row)
+        #print "row number " + str(index) + ":"
+        for k in range(seg_count):
+            if k+1 < seg_count:
+                c = Constraint(variable_dict, [segments_on_that_row[k], segments_on_that_row[k+1]])
+                constraints.append(c)
+                #print(c)
+            else:
+                break
 
     # Add all column segments as variables
-    for i in range(nr_of_rows+1, nr_of_rows+nr_of_columns):
+    for i in range(nr_of_rows+2, nr_of_rows+nr_of_columns+1):
+        index = i-nr_of_rows-2
         segments = map(int, content[i].rstrip().split(" "))
+        segments_on_that_column = []
         for j in range(len(segments)):
-            # i-1 is the index
             # segments[j] is the segment length
             # nr_of_columns = domain = possible start points
-            variable = Variable("column", i-nr_of_rows-1, str(j), segments[j], nr_of_rows)
+            variable = Variable("column", index, str(j), segments[j], nr_of_columns)
             variable_dict[variable] = variable
-            #print variable
+            segments_on_that_column.append(variable)
+        # Create a constraint for each neighbour pair of segments
+        seg_count = len(segments_on_that_column)
+        #print "column number " + str(index) + ":"
+        for k in range(seg_count):
+            if k+1 < seg_count:
+                c = Constraint(variable_dict, [segments_on_that_column[k], segments_on_that_column[k+1]])
+                constraints.append(c)
+                #print(c)
+            else:
+                break
 
-    return variable_dict
+    return domain, variable_dict, constraints

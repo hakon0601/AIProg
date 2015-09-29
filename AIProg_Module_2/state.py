@@ -1,10 +1,8 @@
-
-
-from math import sqrt
-import state_base
-import constraint
 from copy import deepcopy
 from sys import setrecursionlimit
+
+import state_base
+
 setrecursionlimit(10000)
 
 class State(state_base.BaseState):
