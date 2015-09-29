@@ -1,6 +1,6 @@
+import constraint_base
 
-
-class Constraint():
+class Constraint(constraint_base.BaseConstraint):
     def __init__(self, variable_dict, involved_variables=[]):
         # Index of vertex on one side, and index of vertex on the other side.
         self.involved_variables = involved_variables
