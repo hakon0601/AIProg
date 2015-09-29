@@ -9,18 +9,10 @@ class Variable(variabel_base.BaseVariabel):
         self.involved_constraints = []
 
     def __str__(self):
-        #return str(self.index) + " - " + str(self.domain)
-        return str(self.index) + " - (" + str(self.x) + "," + str(self.y) + ") - " + str(self.domain)
-
+        #return str(self.index) + " - (" + str(self.x) + "," + str(self.y) + ") - " + str(self.domain)
 
     def __repr__(self):
         return str(self)
 
     def __eq__(self, other):
-        return self.index == other.index
-
-
-'''
-    def __eq__(self, other):
-        return self.index == other.index
-'''
+        return
