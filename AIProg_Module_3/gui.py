@@ -14,7 +14,7 @@ class Gui():
         self.no_longer_than_itself()
 
         initial_state = State(self.constraints, self.variable_dict, CSP())
-        print initial_state
+        #print initial_state
 
         initial_state.csp.init_revise_queue(initial_state.constraints, initial_state.variable_dict)
         initial_state.csp.domain_filtering_loop(initial_state.variable_dict)
