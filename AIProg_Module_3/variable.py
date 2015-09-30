@@ -9,11 +9,10 @@ class Variable(variabel_base.BaseVariabel):
         self.involved_constraints = []
         self.segment_nr = segment_nr
         # k = antall muligheter 0, 1, 2, 3, 4, 5, 6
-        # for rows: nr_of_columns
         self.k = k
-        self.no_longer_than_self(k)
+        self.no_longer_than_max(k)
 
-    def no_longer_than_self(self, max):
+    def no_longer_than_max(self, max):
         refined_domain = []
         for e in self.domain:
             if max >= self.length + int(e):

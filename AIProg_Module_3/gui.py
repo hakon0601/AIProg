@@ -11,12 +11,7 @@ class Gui():
         self.domain, self.variable_dict, self.constraints = read_file(scenario)
 
 
-        print "VARIABLE DICT BEFORE ANYTHING"
-        for e in self.variable_dict:
-            print e
-
-        # init reduce domains so that no segments can be longer than the row/column
-        #self.no_longer_than_itself()
+        #variable_dict[variable] = variable
 
         initial_state = State(self.constraints, self.variable_dict, CSP())
         print "initial state"
@@ -29,35 +24,6 @@ class Gui():
         print initial_state
 
 
-    def no_longer_than_itself(self):
-        for variable in self.variable_dict:
-            max = 0
-            refined_domain = []
-            if variable.spec == "row":
-                # column count is the limit
-                max = self.domain[1]
-            elif variable.spec == "column":
-                # row count is the limit
-                max = self.domain[0]
-            for e in variable.domain:
-                if max >= variable.length + int(e)+1:
-                    refined_domain.append(e)
-                else:
-                    variable.domain = refined_domain
-                    break
-
-    # THis method will not be useful, because they always WILL BE! It will always return true
-    # We will never put several.... loll this does not work go to bed fucktard
-    def all_involved_variables_are_in_same_row_or_column(self, involved_variables):
-        only_rows = True
-        only_columns = True
-        for variable in involved_variables:
-            if variable.spec == "row":
-                only_columns = False
-            elif variable.spec == "column":
-                only_rows = True
-        # Returns true if all involved variables is either in a row or in a column
-        return (only_rows or only_columns)
 
 if __name__ == "__main__":
     app = Gui()
