@@ -5,21 +5,24 @@ def read_file(filename):
     with open(filename) as f:
         content = f.readlines()
 
-    nr_of_rows, nr_of_columns = map(int, content[0].rstrip().split(" "))
-    domain = (nr_of_rows, nr_of_columns)
+    nr_of_columns, nr_of_rows = map(int, content[0].rstrip().split(" "))
+    print "number of rows: " + str(nr_of_rows)
+    print "number of columns: " + str(nr_of_columns)
+    domain = (nr_of_columns, nr_of_rows)
 
     variable_dict = {}
     constraints = []
 
     # Add all row segments as variables
-    for i in range(1, nr_of_columns+1):
+    for i in range(1, nr_of_rows+1):
+
         index = i-1
         segments = map(int, content[i].rstrip().split(" "))
         segments_on_that_row = []
         for j in range(len(segments)):
             # segments[j] is the segment length
             # nr_of_columns = domain = possible start points. Initial: All possibilities
-            variable = Variable("row", index, str(j), segments[j], nr_of_rows)
+            variable = Variable("row", index, str(j), segments[j], nr_of_columns)
             variable_dict[variable] = variable
             segments_on_that_row.append(variable)
         # Create a constraint for each neighbour pair of segments
@@ -34,14 +37,16 @@ def read_file(filename):
                 break
 
     # Add all column segments as variables
-    for i in range(nr_of_rows+2, nr_of_rows+nr_of_columns+1):
-        index = i-nr_of_rows-2
+    for i in range(nr_of_rows+1, nr_of_rows+nr_of_columns+1):
+        index = nr_of_rows+nr_of_columns-i
+        print "INDEX: " + str(index)
         segments = map(int, content[i].rstrip().split(" "))
+        print segments
         segments_on_that_column = []
         for j in range(len(segments)):
             # segments[j] is the segment length
             # nr_of_columns = domain = possible start points
-            variable = Variable("column", index, str(j), segments[j], nr_of_columns)
+            variable = Variable("column", index, str(j), segments[j], nr_of_rows)
             variable_dict[variable] = variable
             segments_on_that_column.append(variable)
         # Create a constraint for each neighbour pair of segments

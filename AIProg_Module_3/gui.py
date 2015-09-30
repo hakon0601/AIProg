@@ -10,11 +10,17 @@ class Gui():
         # domain = (nr_of_rows, nr_of_columns)
         self.domain, self.variable_dict, self.constraints = read_file(scenario)
 
+
+        print "VARIABLE DICT BEFORE ANYTHING"
+        for e in self.variable_dict:
+            print e
+
         # init reduce domains so that no segments can be longer than the row/column
-        self.no_longer_than_itself()
+        #self.no_longer_than_itself()
 
         initial_state = State(self.constraints, self.variable_dict, CSP())
-        #print initial_state
+        print "initial state"
+        print initial_state
 
         initial_state.csp.init_revise_queue(initial_state.constraints, initial_state.variable_dict)
         initial_state.csp.domain_filtering_loop(initial_state.variable_dict)
@@ -28,8 +34,10 @@ class Gui():
             max = 0
             refined_domain = []
             if variable.spec == "row":
+                # column count is the limit
                 max = self.domain[1]
             elif variable.spec == "column":
+                # row count is the limit
                 max = self.domain[0]
             for e in variable.domain:
                 if max >= variable.length + int(e)+1:
