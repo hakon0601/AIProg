@@ -27,12 +27,6 @@ class CSP(csp_base.BaseCSP):
                     for involved_variable_in_involved_constraint in involved_constraint.involved_variables:
                         if variable != involved_variable_in_involved_constraint:
                             self.revise_queue.append((involved_variable_in_involved_constraint, involved_constraint))
-                            #print "Append to queue: " + str(involved_variable_in_involved_constraint) + ", c: " + str(involved_constraint)
-                            #print ""
-                            #print "QUEUE:"
-                            #for q in self.revise_queue:
-                                #print q
-
 
     def revise(self, variable, constr, variable_dict):
         is_reduced = False

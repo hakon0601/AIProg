@@ -64,14 +64,12 @@ def read_file(filename):
                 c = Constraint(variable_dict, [segments_on_that_column[k], segments_on_that_column[k+1]])
                 constraints.append(c)
                 #print(c)
-            else:
-                break
 
-    # Define_intersecting_constraints
-    for row_variable in rows:
-        for column_variable in columns:
-            involved_variables = [row_variable, column_variable]
-            c = Constraint(variable_dict, involved_variables)
-            constraints.append(c)
+    # # Define_intersecting_constraints
+    # for row_variable in rows:
+    #     for column_variable in columns:
+    #         involved_variables = [row_variable, column_variable]
+    #         c = Constraint(variable_dict, involved_variables)
+    #         constraints.append(c)
 
-    return domain, variable_dict, constraints
+    return domain, rows, columns, variable_dict, constraints
