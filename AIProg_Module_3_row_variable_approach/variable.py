@@ -8,15 +8,8 @@ class Variable(variabel_base.BaseVariabel):
         self.direction = direction
         self.length = length
         # Domain is a list of possible permutation lists containing boolean values
-        if index == 11:
-            print "--------------"
         self.domain = self.find_permutations(segments, length)
         self.involved_constraints = []
-        if self.index == 11:
-            print "Variable: " + str(self)
-            print "Segments: " + str(segments)
-            print "Domain: " + str(self.domain)
-            print "-------------------"
 
     def find_permutations(self, segments, length):
         if len(segments) == 0:

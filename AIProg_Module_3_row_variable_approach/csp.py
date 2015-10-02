@@ -31,22 +31,10 @@ class CSP(csp_base.BaseCSP):
                 intersecting_value = constraining_variable.domain[0][variable.nr]
                 valid_domain = []
 
-                if variable.index == 8 or variable.index == 11:
-                    print "----------------------"
-                    print "Variable: " + str(variable)
-                    print "Constraining variable: " + str(constraining_variable)
-                    print "Intersecting value (Constraining variable): " + str(intersecting_value)
-
                 for permutation in variable.domain:
                     if permutation[constraining_variable.nr] == intersecting_value:
                         valid_domain.append(permutation)
                     else:
-                        if variable.index == 8 or variable.index == 11:
-                            print "Permutation: " + str(permutation)
-                            print "Permutation removed"
                         reduced = True
                 variable.domain = valid_domain
-                if variable.index == 8 or variable.index == 11:
-                    print "Valid domain:"
-                    print valid_domain
         return reduced
