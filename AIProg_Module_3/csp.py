@@ -10,9 +10,9 @@ class CSP(csp_base.BaseCSP):
         for constr in constraints:
             # TODO NB
             #self.revise_queue.append((constr.involved_variables[0], constr))
-            for variable in constr.involved_variables:
+            for variable_index in constr.involved_variables:
                 #print "var: " + str(variable_dict[variable]) + " --- constr: " + str(constr)
-                self.revise_queue.append((variable, constr))
+                self.revise_queue.append((variable_dict[variable_index], constr))
         #print "REVISE QUEUE"
         #for tuple in self.revise_queue:
             #print tuple

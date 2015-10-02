@@ -1,7 +1,7 @@
 from input_handler import read_file
 from state import State
 from csp import CSP
-
+from variable import Variable
 
 class Gui():
     def __init__(self, *args, **kwargs):
@@ -14,14 +14,13 @@ class Gui():
         self.dimensions, self.variable_dict, self.constraints = read_file(scenario)
         # Make new constraints?
 
+        print "initial variable_dict: " + str(self.variable_dict)
+
         initial_state = State(self.constraints, self.variable_dict, CSP())
         initial_state.csp.init_revise_queue(initial_state.constraints, initial_state.variable_dict)
         initial_state.csp.domain_filtering_loop(initial_state.variable_dict)
 
-        print "State after isolated domain reduction:"
-        print initial_state
-
-
+        print "refined variable_dict: " + str(initial_state.variable_dict)
 
 
 
