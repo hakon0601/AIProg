@@ -30,20 +30,12 @@ class CSP(csp_base.BaseCSP):
 
     def revise(self, variable, constr, variable_dict):
         is_reduced = False
-        # temporarily scan variable so that we do not mess with the iterations
         scan = copy.deepcopy(variable.domain)
         if constr.all_involved_vars_are_in_same_line():
             for e in scan:
-                #print ""
-                #print variable
-                #print "for e = " + str(e)
                 if self.is_breaking(constr, variable, e):
                     variable.domain.remove(e)
-                    #print "refined variable domain: " + str(variable.domain)
                     is_reduced = True
-            # If variable is a singleton domain, then reduce all adjacent variables domains
-            #if len(variable.domain) == 1:
-                #self.reduce_neighbours_of_singleton_domain(variable_dict, variable)
             return is_reduced
         else:
             # row and column intersecting

@@ -16,6 +16,7 @@ def read_file(filename):
     constraints = []
 
     variable_index = 0
+    # Add all rows as variables
     for i in range(1, nr_of_rows+1):
         segments = map(int, content[i].rstrip().split(" "))
         #segments_on_that_row = []
@@ -24,10 +25,12 @@ def read_file(filename):
         variable_index += 1
         rows.append(variable)
 
-    # Add all column segments as variables
+    # Add all columns as variables
     for i in range(nr_of_rows+1, nr_of_rows+nr_of_columns+1):
         segments = map(int, content[i].rstrip().split(" "))
-        variable = Variable(index=variable_index, direction="column", nr=i-nr_of_rows-1,length=nr_of_rows, segments=segments)
+        if variable_index == 11:
+            print "SEGMENTS: " + str(segments)
+        variable = Variable(index=variable_index, direction="column", nr=i-nr_of_rows-1,length=nr_of_rows, segments=segments[::-1])
         variable_dict[variable_index] = variable
         variable_index += 1
         columns.append(variable)

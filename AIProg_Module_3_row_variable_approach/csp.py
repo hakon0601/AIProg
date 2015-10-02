@@ -22,7 +22,7 @@ class CSP(csp_base.BaseCSP):
                         if variable.index != involved_variable_in_involved_constraint:
                             self.revise_queue.append((variable_dict[involved_variable_in_involved_constraint], involved_constraint))
 
-    # Reduces domain of current variable if constraining variables is singleton domains
+    # Reduces domain of current variable if constraining variable is singleton domain
     def revise(self, variable, constr, variable_dict):
         reduced = False
         for constraining_variable_index in constr.involved_variables:
@@ -30,10 +30,23 @@ class CSP(csp_base.BaseCSP):
             if variable.index != constraining_variable_index and len(constraining_variable.domain) == 1:
                 intersecting_value = constraining_variable.domain[0][variable.nr]
                 valid_domain = []
+
+                if variable.index == 8 or variable.index == 11:
+                    print "----------------------"
+                    print "Variable: " + str(variable)
+                    print "Constraining variable: " + str(constraining_variable)
+                    print "Intersecting value (Constraining variable): " + str(intersecting_value)
+
                 for permutation in variable.domain:
                     if permutation[constraining_variable.nr] == intersecting_value:
                         valid_domain.append(permutation)
                     else:
+                        if variable.index == 8 or variable.index == 11:
+                            print "Permutation: " + str(permutation)
+                            print "Permutation removed"
                         reduced = True
                 variable.domain = valid_domain
+                if variable.index == 8 or variable.index == 11:
+                    print "Valid domain:"
+                    print valid_domain
         return reduced

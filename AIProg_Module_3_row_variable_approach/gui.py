@@ -14,14 +14,19 @@ class Gui():
         self.dimensions, self.variable_dict, self.constraints = read_file(scenario)
         # Make new constraints?
 
-        print "initial variable_dict: " + str(self.variable_dict)
+        #print "initial variable_dict: " + str(self.variable_dict)
+        for key, value in self.variable_dict.items() :
+            print (key, value)
 
         initial_state = State(self.constraints, self.variable_dict, CSP())
         initial_state.csp.init_revise_queue(initial_state.constraints, initial_state.variable_dict)
         initial_state.csp.domain_filtering_loop(initial_state.variable_dict)
 
-        print "refined variable_dict: " + str(initial_state.variable_dict)
-
+        #print "refined variable_dict: " + str(initial_state.variable_dict)
+        print ""
+        print "refined variable_dict: "
+        for key, value in initial_state.variable_dict.items() :
+            print (key, value)
 
 
 
