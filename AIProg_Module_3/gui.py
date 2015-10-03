@@ -2,11 +2,12 @@ import Tkinter as tk
 from Tkinter import *
 from tkFileDialog import askopenfilename
 
-from input_handler import read_file
+import input_handler
 from csp_state import CSPState
 from gac import GAC
-from a_star import AStar
+from a_star_graph import AStar
 from variable import Variable
+
 
 class Gui(tk.Tk):
     def __init__(self, delay, *args, **kwargs):
@@ -16,13 +17,14 @@ class Gui(tk.Tk):
         self.cells = {}
         self.cell_width = 25
         self.cell_height = 25
-        #scenario = "scenarios/scenario_test.txt"
+
+        constraint_function = input_handler.makefunc(["x", "y"], "for i in range(y): print x")
+        print "jrfsd" + str(constraint_function(1, 5))
 
         self.create_menu()
 
     def create_menu(self):
-        # existing boards buttons
-        self.info1 = Label(self, text="Choose an existing graph: ")
+        self.info1 = Label(self, text="Choose an existing scenario: ")
         self.info1.pack(anchor=W)
         self.buttons = [
             tk.Button(self, text="Scenario 0", command=lambda: self.start("scenarios/scenario0.txt")),
@@ -37,7 +39,7 @@ class Gui(tk.Tk):
             btn.pack(anchor=W)
 
          # or open a file
-        self.info2 = Label(self, text="Or open file with new board: ")
+        self.info2 = Label(self, text="Or open file with new scenario: ")
         self.info2.pack(anchor=W)
         self.openFileButton = tk.Button(self, text="Open file", command=self.openFile)
         self.openFileButton.pack(anchor=W)
@@ -45,10 +47,7 @@ class Gui(tk.Tk):
     def start(self, scenario):
         self.cells = {}
         self.destroy_menu()
-        self.dimensions, self.variable_dict, self.constraints = read_file(scenario)
-
-        #for key, value in self.variable_dict.items() :
-        #    print (key, value)
+        self.dimensions, self.variable_dict, self.constraints = input_handler.read_file(scenario)
 
         initial_state = CSPState(self.constraints, self.variable_dict, GAC())
         initial_state.gac.init_revise_queue(initial_state.constraints, initial_state.variable_dict)
@@ -65,11 +64,6 @@ class Gui(tk.Tk):
         self.cancelButton.pack()
 
         self.draw_board(initial_state)
-
-        #print ""
-        #print "refined variable_dict: "
-        #for key, value in initial_state.variable_dict.items() :
-        #    print (key, value)
 
         if not initial_state.is_solution_or_contradictory():
             self.a_star = AStar()
@@ -97,12 +91,11 @@ class Gui(tk.Tk):
                 if variable.direction == "row":
                     for i in range(self.dimensions[0]):
                         if variable.domain[0][i]:
-                            self.canvas.itemconfig(self.cells[i, variable.nr], fill="blue")
+                            self.canvas.itemconfig(self.cells[i, variable.direction_nr], fill="blue")
                 else:
                     for i in range(self.dimensions[1]):
                         if variable.domain[0][i]:
-                            self.canvas.itemconfig(self.cells[variable.nr, i], fill="blue")
-
+                            self.canvas.itemconfig(self.cells[variable.direction_nr, i], fill="blue")
 
     def run_a_star(self):
         print "running astar"

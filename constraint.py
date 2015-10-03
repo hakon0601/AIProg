@@ -3,6 +3,7 @@
 class Constraint():
     def __init__(self, variable_dict, involved_variables=[]):
         self.involved_variables = involved_variables
+        self.constraining_func = None
         for variable in involved_variables:
             variable_dict[variable].involved_constraints.append(self)
 

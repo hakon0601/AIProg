@@ -1,13 +1,11 @@
 from heapq import heappush, heappop, heapify
-from collections import defaultdict
+from a_star_general import AStarGeneral
 
-
-class AStar():
+class AStar_tree(AStarGeneral):
     def __init__(self, search_method="Best-first"):
         self.open_nodes = []
         if search_method == "Best-first": heapify(self.open_nodes)
         self.closed_nodes = set()
-        self.generated_states = defaultdict(lambda: None)
         self.search_method = search_method
         self.finished = False
 
@@ -73,24 +71,10 @@ class AStar():
             successor_nodes = current_node.generate_successor_nodes()
             print "successors: " + str(successor_nodes)
             for successor in successor_nodes:
-                # If the successor is already generated
-                if self.generated_states[successor.getID()]:
-                    successor = self.generated_states[successor.getID()]
-
-                    tentative_g = current_node.g_value + current_node.movement_cost(successor)
-                    if tentative_g < successor.g_value:
-                        self.attach_and_eval(successor, current_node)
-                        if successor in self.closed_nodes:
-                            self.propagate_path_improvement(successor)
-                        # We have to resort our heap when we internally change a value the heap is sorted on.
-                        if self.search_method == "Best-first":
-                            self.open_nodes.sort()
-                else:
-                    # Successor is not generated
-                    # Defaultdict will create new item (instead of error) since key is not there
-                    self.generated_states[successor.getID()] = successor
-                    self.attach_and_eval(successor, current_node)
-                    self.add_open(successor)
+                # No need for checking whether a node has been generated
+                # This is a tree and nodes can only be generated from one parent
+                self.attach_and_eval(successor, current_node)
+                self.add_open(successor)
 
                 current_node.children.append(successor)
 

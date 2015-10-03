@@ -3,8 +3,8 @@ from Tkinter import *
 from tkFileDialog import askopenfilename
 
 import input_handler
-from AIProg_Module_2.csp import CSP
-from a_star import AStar
+from AIProg_Module_2.gac import GAC
+from a_star_graph import AStar
 from state import State
 
 
@@ -74,13 +74,10 @@ class Gui(tk.Tk):
         self.nodes = {}
 
         variable_dict, constraints = input_handler.read_file(filename)
-        initial_state = State(constraints, variable_dict, CSP())
+        initial_state = State(constraints, variable_dict, GAC())
         print "init State: " + str(initial_state)
         initial_state.csp.init_revise_queue(initial_state.constraints, initial_state.variable_dict)
         initial_state.csp.domain_filtering_loop(initial_state.variable_dict)
-
-        self.a_star = AStar()
-        self.a_star.add_start_state_to_open(initial_state)
 
         self.screen_width = self.winfo_screenwidth() - 100
         self.screen_height = self.winfo_screenheight() - 200
@@ -98,7 +95,10 @@ class Gui(tk.Tk):
 
         self.draw_board(initial_state)
 
-        self.run_a_star()
+        if not initial_state.is_solution_or_contradictory():
+            self.a_star = AStar()
+            self.a_star.add_start_state_to_open(initial_state)
+            self.run_a_star()
 
 
     def back(self):
@@ -126,8 +126,8 @@ class Gui(tk.Tk):
             color = "white"
             if len(variable.domain) == 1:
                 color = self.color_dict[variable.domain[0]]
-
             self.nodes[variable.index] = self.canvas.create_oval(x1, y1, x2, y2, fill=color, tags="rect")
+
         for constraint in initial_state.constraints:
             x1 = initial_state.variable_dict[constraint.involved_variables[0]].x + self.oval_radius/2
             y1 = initial_state.variable_dict[constraint.involved_variables[0]].y + self.oval_radius/2
@@ -185,40 +185,6 @@ class Gui(tk.Tk):
         # run_a_star will be called over and over again
         if continuing:
             self.after(self.delay, lambda: self.run_a_star())
-
-
-'''
-variable_dict, constraints = input_handler.read_file("graph-color-2.txt")
-initial_state = State(constraints, variable_dict, CSP())
-print "init State: " + str(initial_state)
-initial_state.csp.init_revise_queue(initial_state.constraints, initial_state.variable_dict)
-initial_state.csp.domain_filtering_loop(initial_state.variable_dict)
-
-a_star = AStar()
-a_star.add_start_state_to_open(initial_state)
-
-def run_a_star():
-    # if the algorithm is not finished with the board, do one iteration of the algorithm
-    result = a_star.do_one_step()
-    if not result:
-        # there are no more nodes in open nodes -> algorithm did not reach goal, fail
-        print("Failed")
-        return
-    elif result == 1:
-        # the algorithm is not finished
-        #self.update_board()
-        # run_a_star will be called over and over again
-        #self.after(500, lambda: run_a_star())
-        run_a_star()
-    else:
-    # Result is a reconstructed path of states from start to goal
-        print("Success")
-        print "Path length: " + str(round(result[-1].g_value * 10, 2))
-        #self.draw_path(result, i, 0)
-
-
-run_a_star()
-'''
 
 if __name__ == "__main__":
     app = Gui(delay=50)

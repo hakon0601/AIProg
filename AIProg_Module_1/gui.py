@@ -3,7 +3,7 @@ from tkFileDialog import askopenfilename
 from Tkinter import *
 
 from board import Board
-from a_star import AStar
+from a_star_graph import AStar
 from state import State
 
 

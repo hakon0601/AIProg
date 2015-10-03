@@ -36,6 +36,14 @@ def read_file(filename):
     # Creating one constraint for each cell shared by a column and a row
     for column in columns:
         for row in rows:
-            constraints.append(Constraint(variable_dict, involved_variables=[column.index, row.index]))
+            constraint = Constraint(variable_dict, involved_variables=[column.index, row.index])
+            constraint.constraining_func = makefunc(["x", "y"], "x == y")
+            constraints.append(constraint)
 
     return dimensions, variable_dict, constraints
+
+def makefunc(var_names, expression):
+    args = ""
+    for n in var_names:
+        args = args + "," + n
+    return eval("(lambda " + args[1:] + ": " + expression + ")")
