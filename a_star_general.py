@@ -42,7 +42,6 @@ class AStarGeneral():
         self.add_open(start_state)
         start_state.g_value = 0
         start_state.h_value = start_state.calculate_h()
-        self.generated_states[start_state.getID()] = start_state
 
     def attach_and_eval(self, successor, current_node):
         successor.parent = current_node

@@ -3,7 +3,7 @@ from tkFileDialog import askopenfilename
 from Tkinter import *
 
 from board import Board
-from a_star_graph import AStar
+from a_star_graph import AStarGraph
 from state import State
 
 
@@ -33,12 +33,12 @@ class Gui(tk.Tk):
         self.info1.pack(anchor=W)
         self.v = StringVar()
         self.buttons = [
-            tk.Button(self, text="Board 0", command=lambda:self.start("board0.txt")),
-            tk.Button(self, text="Board 1", command=lambda:self.start("board1.txt")),
-            tk.Button(self, text="Board 2", command=lambda:self.start("board2.txt")),
-            tk.Button(self, text="Board 3", command=lambda:self.start("board3.txt")),
-            tk.Button(self, text="Board 4", command=lambda:self.start("board4.txt")),
-            tk.Button(self, text="Board 5", command=lambda:self.start("board5.txt"))
+            tk.Button(self, text="Board 0", command=lambda:self.start("boards/board0.txt")),
+            tk.Button(self, text="Board 1", command=lambda:self.start("boards/board1.txt")),
+            tk.Button(self, text="Board 2", command=lambda:self.start("boards/board2.txt")),
+            tk.Button(self, text="Board 3", command=lambda:self.start("boards/board3.txt")),
+            tk.Button(self, text="Board 4", command=lambda:self.start("boards/board4.txt")),
+            tk.Button(self, text="Board 5", command=lambda:self.start("boards/board5.txt"))
         ]
         for btn in self.buttons:
             btn.pack(anchor=W)
@@ -81,7 +81,11 @@ class Gui(tk.Tk):
         self.cells = {}
 
         # initialize AStar instances for the search algorithms
-        self.a_stars = [AStar(search_method="Best-first"), AStar(search_method="Breadth-first"), AStar(search_method="Depth-first")]
+        self.a_stars = [
+            AStarGraph(search_method="Best-first"),
+            AStarGraph(search_method="Breadth-first"),
+            AStarGraph(search_method="Depth-first")
+        ]
 
         # Dictionary containing all the graphic rectangle objects, indexed by (i, x, y) where i is the index
         # of that board-display and x and y are coordinates on that board
@@ -103,6 +107,7 @@ class Gui(tk.Tk):
         for i in range(len(self.a_stars)):
             start_state = State(self.board.start[0], self.board.start[1], self.board)
             self.a_stars[i].add_start_state_to_open(start_state)
+            self.a_stars[i].generated_states[start_state.getID()] = start_state
 
         self.run_a_star()
 
@@ -154,7 +159,6 @@ class Gui(tk.Tk):
             self.after(self.delay, lambda: self.run_a_star())
 
     def draw_board(self):
-        self.canvas.delete("all")
         for i in range(len(self.a_stars)):
             offset_x = (self.board.dim[0] + 1)*self.cell_width * i
             offset_y = self.cell_height

@@ -13,7 +13,9 @@ class GAC(BaseGAC):
     def init_revise_queue(self, constraints, variable_dict):
         for constr in constraints:
             for variable_key in constr.involved_variables:
-                self.revise_queue.append((variable_dict[variable_key], constr))
+                variable = variable_dict[variable_key]
+                if len(variable.domain) != 1:
+                    self.revise_queue.append((variable, constr))
 
     def domain_filtering_loop(self, variable_dict):
         while self.revise_queue:
@@ -31,9 +33,9 @@ class GAC(BaseGAC):
     # Reduces domain of current variable if constraining variable is singleton domain
     def revise(self, variable, constr, variable_dict):
         reduced = False
-        for constraining_variable_index in constr.involved_variables:
-            constraining_variable = variable_dict[constraining_variable_index]
-            if variable.index != constraining_variable_index:
+        for constraining_variable_key in constr.involved_variables:
+            if variable.index != constraining_variable_key:
+                constraining_variable = variable_dict[constraining_variable_key]
                 valid_domain = []
                 for permutation in variable.domain:
                     # Remove a permutation from the domain if no permutation in the

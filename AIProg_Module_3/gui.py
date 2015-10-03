@@ -5,8 +5,7 @@ from tkFileDialog import askopenfilename
 import input_handler
 from csp_state import CSPState
 from gac import GAC
-from a_star_graph import AStar
-from variable import Variable
+from a_star_tree import AStarTree
 
 
 class Gui(tk.Tk):
@@ -17,9 +16,6 @@ class Gui(tk.Tk):
         self.cells = {}
         self.cell_width = 25
         self.cell_height = 25
-
-        constraint_function = input_handler.makefunc(["x", "y"], "for i in range(y): print x")
-        print "jrfsd" + str(constraint_function(1, 5))
 
         self.create_menu()
 
@@ -49,29 +45,29 @@ class Gui(tk.Tk):
         self.destroy_menu()
         self.dimensions, self.variable_dict, self.constraints = input_handler.read_file(scenario)
 
-        initial_state = CSPState(self.constraints, self.variable_dict, GAC())
-        initial_state.gac.init_revise_queue(initial_state.constraints, initial_state.variable_dict)
-        initial_state.gac.domain_filtering_loop(initial_state.variable_dict)
-
         screen_width = (self.dimensions[0] + 2)*self.cell_width
         screen_height = (self.dimensions[1] + 2)*self.cell_height
         self.canvas = tk.Canvas(self, width=screen_width, height=screen_height, borderwidth=0, highlightthickness=0)
         self.canvas.pack(side="top", fill="both", expand="true")
+        self.draw_board()
 
         self.backButton = tk.Button(self,text='back', command=self.back)
         self.cancelButton = tk.Button(self,text='Cancel', command=self.cancel)
         self.backButton.pack()
         self.cancelButton.pack()
 
-        self.draw_board(initial_state)
+        initial_state = CSPState(self.constraints, self.variable_dict, GAC())
+        initial_state.gac.init_revise_queue(initial_state.constraints, initial_state.variable_dict)
+        initial_state.gac.domain_filtering_loop(initial_state.variable_dict)
+
+        self.update_board(initial_state)
 
         if not initial_state.is_solution_or_contradictory():
-            self.a_star = AStar()
+            self.a_star = AStarTree()
             self.a_star.add_start_state_to_open(initial_state)
             self.run_a_star()
 
-    def draw_board(self, initial_state):
-        self.canvas.delete("all")
+    def draw_board(self):
         print "dim " + str(self.dimensions)
         offset_x = self.cell_width
         offset_y = self.cell_height
@@ -82,8 +78,6 @@ class Gui(tk.Tk):
                 x2 = x1 + self.cell_width
                 y2 = y1 - self.cell_height
                 self.cells[x, y] = self.canvas.create_rectangle(x1, y1, x2, y2, fill="white", tags="rect")
-
-        self.update_board(initial_state)
 
     def update_board(self, state):
         for variable in state.variable_dict.values():

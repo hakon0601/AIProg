@@ -1,11 +1,11 @@
+import state_base
 from copy import deepcopy
-from state_base import BaseState
 
 
-class State(BaseState):
-    def __init__(self, constraints, variable_dict, csp):
+class CSPState(state_base.BaseState):
+    def __init__(self, constraints, variable_dict, gac):
         self.constraints = constraints
-        self.csp = csp
+        self.gac = gac
         self.variable_dict = variable_dict
         self.parent = None
         self.children = []
@@ -14,9 +14,6 @@ class State(BaseState):
 
     def get_f(self):
         return self.g_value + self.h_value
-
-    def getID(self):
-        return self.__hash__()
 
     def calculate_h(self):
         tentative_h = 0
@@ -32,24 +29,17 @@ class State(BaseState):
 
     def generate_successor_nodes(self):
         successors = []
-        # Generate one successor for every possible singleton domain for each variable
-        variable_with_smallest_domain = None
-        for variable in self.variable_dict.values():
-            if (not variable_with_smallest_domain or len(variable.domain) < len(variable_with_smallest_domain.domain)):
-                if len(variable.domain) != 1:
-                    variable_with_smallest_domain = variable
-        print "variable with smallest domain: " + str(variable_with_smallest_domain)
+        # Generate one successor for every possible singleton domain of the variable with the smallest domain
+        variable_with_smallest_domain = self.get_variable_with_smallest_domain()
         for value in variable_with_smallest_domain.domain:
             successor_variable_dict = deepcopy(self.variable_dict)
 
-            # Enforcing the assumption by reducing the domain of the assumed
-            # variable to a singleton set (only one value)
+            # Reducing the domain of the variable to a singleton set
             successor_variable_dict[variable_with_smallest_domain.index].domain = [value]
-            successor_state = State(self.constraints, successor_variable_dict, self.csp)
+            successor_state = CSPState(self.constraints, successor_variable_dict, self.gac)
 
-            # = GAC rerun
-            successor_state.csp.init_revise_queue(self.constraints, successor_state.variable_dict)
-            successor_state.csp.domain_filtering_loop(successor_state.variable_dict)
+            # GAC rerun on the newly generated successor
+            self.gac.gac_rerun(successor_state.constraints, successor_state.variable_dict)
 
             # Calulate h after domain reductions
             successor_state.h_value = successor_state.calculate_h()
@@ -59,13 +49,6 @@ class State(BaseState):
 
     def movement_cost(self, successor):
         return 1
-
-    def __eq__(self, other):
-        # If all domains of the corresponding variables in the two states are the same, they are the same state
-        for key in self.variable_dict.keys():
-            if not set(self.variable_dict[key].domain) == set(other.variable_dict[key].domain):
-                return False
-        return True
 
     def __str__(self):
         return str(self.variable_dict) + " h: " + str(self.h_value) + " - g: " + str(self.g_value)
@@ -84,9 +67,6 @@ class State(BaseState):
             else:
                 return False
 
-    def __hash__(self):
-        return hash(repr(sorted(self.variable_dict.items())))
-
     def is_solution_or_contradictory(self):
         for variable in self.variable_dict.values():
             # Contradictory
@@ -96,3 +76,11 @@ class State(BaseState):
             elif len(variable.domain) != 1:
                 return False
         return True
+
+    def get_variable_with_smallest_domain(self):
+        variable_with_smallest_domain = None
+        for variable in self.variable_dict.values():
+            if not variable_with_smallest_domain or len(variable.domain) < len(variable_with_smallest_domain.domain):
+                if len(variable.domain) != 1:
+                    variable_with_smallest_domain = variable
+        return variable_with_smallest_domain

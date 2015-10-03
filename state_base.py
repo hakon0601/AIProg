@@ -19,7 +19,3 @@ class BaseState(object):
     @abc.abstractmethod
     def generate_successor_nodes(self):
         return
-
-    @abc.abstractmethod
-    def getID(self):
-        return

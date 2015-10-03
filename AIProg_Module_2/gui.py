@@ -1,20 +1,23 @@
+from time import time
 import Tkinter as tk
 from Tkinter import *
 from tkFileDialog import askopenfilename
 
 import input_handler
-from AIProg_Module_2.gac import GAC
-from a_star_graph import AStar
-from state import State
+from gac import GAC
+from a_star_tree import AStarTree
+from csp_state import CSPState
 
 
 class Gui(tk.Tk):
     def __init__(self, delay, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
-        self.title("GAC with A*")
+        self.title("Vertex coloring problem")
         self.delay = delay
         self.oval_radius = 15
-        self.color_dict = {0: "blue", 1: "green", 2: "red", 3: "black", 4: "gray", 5: "yellow"}
+        # TODO test with 10 different colors
+        self.color_dict = {0: "blue", 1: "green", 2: "red", 3: "black", 4: "gray", 5: "yellow",
+                           6: "cyan", 7: "purple", 8: "aquamarine", 9: "pink", 10: "tan"}
 
         self.create_menu()
 
@@ -22,7 +25,6 @@ class Gui(tk.Tk):
         # existing boards buttons
         self.info1 = Label(self, text="Choose an existing graph: ")
         self.info1.pack(anchor=W)
-        self.v = StringVar()
         self.buttons = [
             tk.Button(self, text="Graph 0", command=lambda: self.start("graphs/graph0.txt")),
             tk.Button(self, text="Graph 1", command=lambda: self.start("graphs/graph1.txt")),
@@ -60,28 +62,24 @@ class Gui(tk.Tk):
     def destroy_menu(self):
         for btn in self.buttons:
             btn.destroy()
-
         self.info1.destroy()
         self.info2.destroy()
         self.openFileButton.destroy()
 
-
     def start(self, filename):
+        self.time = time()
         # destroy menu when algorithm illustrations begins
         self.destroy_menu()
-        print filename
-
         self.nodes = {}
 
         variable_dict, constraints = input_handler.read_file(filename)
-        initial_state = State(constraints, variable_dict, GAC())
+        initial_state = CSPState(constraints, variable_dict, GAC())
         print "init State: " + str(initial_state)
-        initial_state.csp.init_revise_queue(initial_state.constraints, initial_state.variable_dict)
-        initial_state.csp.domain_filtering_loop(initial_state.variable_dict)
+        initial_state.gac.init_revise_queue(initial_state.constraints, initial_state.variable_dict)
+        initial_state.gac.domain_filtering_loop(initial_state.variable_dict)
 
         self.screen_width = self.winfo_screenwidth() - 100
         self.screen_height = self.winfo_screenheight() - 200
-        print (self.screen_width, self.screen_height)
         self.normalize_coordinates(initial_state)
         print "normalized init State: " + str(initial_state)
         self.canvas = tk.Canvas(self, width=self.screen_width, height=self.screen_height, borderwidth=0, highlightthickness=0)
@@ -96,14 +94,13 @@ class Gui(tk.Tk):
         self.draw_board(initial_state)
 
         if not initial_state.is_solution_or_contradictory():
-            self.a_star = AStar()
+            self.a_star = AStarTree()
             self.a_star.add_start_state_to_open(initial_state)
             self.run_a_star()
 
 
     def back(self):
         # goes back to menu
-
         # destroy current gui elements
         for widget in self.winfo_children():
             widget.destroy()
@@ -117,7 +114,13 @@ class Gui(tk.Tk):
         self.destroy()
 
     def draw_board(self, initial_state):
-        self.canvas.delete("all")
+        for constraint in initial_state.constraints:
+            x1 = initial_state.variable_dict[constraint.involved_variables[0]].x + self.oval_radius/2
+            y1 = initial_state.variable_dict[constraint.involved_variables[0]].y + self.oval_radius/2
+            x2 = initial_state.variable_dict[constraint.involved_variables[1]].x + self.oval_radius/2
+            y2 = initial_state.variable_dict[constraint.involved_variables[1]].y + self.oval_radius/2
+            self.canvas.create_line(x1, y1, x2, y2)
+
         for variable in initial_state.variable_dict.values():
             x1 = variable.x
             y1 = variable.y + self.oval_radius
@@ -127,13 +130,6 @@ class Gui(tk.Tk):
             if len(variable.domain) == 1:
                 color = self.color_dict[variable.domain[0]]
             self.nodes[variable.index] = self.canvas.create_oval(x1, y1, x2, y2, fill=color, tags="rect")
-
-        for constraint in initial_state.constraints:
-            x1 = initial_state.variable_dict[constraint.involved_variables[0]].x + self.oval_radius/2
-            y1 = initial_state.variable_dict[constraint.involved_variables[0]].y + self.oval_radius/2
-            x2 = initial_state.variable_dict[constraint.involved_variables[1]].x + self.oval_radius/2
-            y2 = initial_state.variable_dict[constraint.involved_variables[1]].y + self.oval_radius/2
-            self.canvas.create_line(x1, y1, x2, y2)
 
     def update_board(self, state):
         for variable in state.variable_dict.values():
@@ -163,7 +159,6 @@ class Gui(tk.Tk):
             variable.x = (variable.x - old_min_x) / old_range_x * new_range_x
             variable.y = (variable.y - old_min_y) / old_range_y * new_range_y
 
-
     def run_a_star(self):
         print "running astar"
         continuing = False
@@ -180,6 +175,8 @@ class Gui(tk.Tk):
             else:
                 print("Success")
                 self.a_star.finished = True
+                print "Time elapsed: " + str(time() - self.time)
+
         self.update_board(result)
         # as long as at least one of the algorithms is not finished,
         # run_a_star will be called over and over again
@@ -187,5 +184,5 @@ class Gui(tk.Tk):
             self.after(self.delay, lambda: self.run_a_star())
 
 if __name__ == "__main__":
-    app = Gui(delay=50)
+    app = Gui(delay=1)
     app.mainloop()
