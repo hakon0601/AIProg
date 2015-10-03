@@ -1,6 +1,7 @@
 import abc
 
-class BaseCSP(object):
+
+class BaseGAC(object):
     def __init__(self):
         __metaclass__ = abc.ABCMeta
 
@@ -11,7 +12,6 @@ class BaseCSP(object):
     @abc.abstractmethod
     def domain_filtering_loop(self, variable_dict):
         return
-
 
     @abc.abstractmethod
     def revise(self, variable, constr, variable_dict):

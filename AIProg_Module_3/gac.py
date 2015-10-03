@@ -1,10 +1,14 @@
-import csp_base
-import copy
+from gac_base import BaseGAC
 
-class CSP(csp_base.BaseCSP):
+
+class GAC(BaseGAC):
     def __init__(self):
         # Tuples with pairs of variable indexes and constraints
         self.revise_queue = []
+
+    def gac_rerun(self, constraints, variable_dict):
+        self.init_revise_queue(constraints, variable_dict)
+        self.domain_filtering_loop(variable_dict)
 
     def init_revise_queue(self, constraints, variable_dict):
         for constr in constraints:

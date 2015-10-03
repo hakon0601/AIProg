@@ -1,4 +1,3 @@
-import operator
 from heapq import heappush, heappop, heapify
 from collections import defaultdict
 
@@ -20,9 +19,6 @@ class AStar():
 
     def add_closed(self, node):
         self.closed_nodes.add(node)
-
-    def remove_closed(self, node):
-        self.closed_nodes.remove(node)
 
     def get_node_from_open(self):
         if self.search_method == "Best-first":
@@ -50,19 +46,14 @@ class AStar():
         start_state.h_value = start_state.calculate_h()
         self.generated_states[start_state.getID()] = start_state
 
-    def propagate(self, successor, g_value):
-        successor.g_value = g_value
-        if self.search_method == "Best-first":
-            self.open_nodes.sort()
-
+    # Update all g values and parents along a new improved path
     def propagate_path_improvement(self, successor):
         for child_state in successor.children:
             tentative_g = successor.g_value + successor.movement_cost(child_state)
             if tentative_g < child_state.g_value:
                 child_state.parent = successor
-                child_state.g_value = successor.g_value + successor.movement_cost(child_state)
+                child_state.g_value = tentative_g
                 self.propagate_path_improvement(child_state)
-
 
     def attach_and_eval(self, successor, current_node):
         successor.parent = current_node
@@ -77,7 +68,6 @@ class AStar():
             self.add_closed(current_node)
             # If the current node is the goal node
             if current_node.h_value == 0:
-                print "Done"
                 return current_node
             # generate and get successor nodes
             successor_nodes = current_node.generate_successor_nodes()
@@ -92,6 +82,7 @@ class AStar():
                         self.attach_and_eval(successor, current_node)
                         if successor in self.closed_nodes:
                             self.propagate_path_improvement(successor)
+                        # We have to resort our heap when we internally change a value the heap is sorted on.
                         if self.search_method == "Best-first":
                             self.open_nodes.sort()
                 else:
@@ -100,36 +91,8 @@ class AStar():
                     self.generated_states[successor.getID()] = successor
                     self.attach_and_eval(successor, current_node)
                     self.add_open(successor)
-                    if self.search_method == "Best-first":
-                        self.open_nodes.sort()
 
                 current_node.children.append(successor)
 
             return current_node
         return None
-        '''
-                # TODO remove whats left of method
-
-
-                # if successor is closed, it is not relevant anymore
-                if successor in self.closed_nodes:
-                    continue
-                # calculates successors g_value with the new parent
-                tentative_g = current_node.g_value + current_node.movement_cost(successor)
-                # append parent to successor
-                successor.parents.append(current_node)
-                if successor in self.open_nodes:
-                    # updates successors g_value if it is better
-                    if tentative_g < successor.g_value:
-                        self.propagate(successor, tentative_g)
-                else:
-                    #if self.search_method == "Best-first":
-                    #print("order: " + str(successor))
-                    # place successor in open node and set g_value (it is not yet explored)
-                    successor.g_value = tentative_g
-                    self.add_open(successor)
-
-            # Means that the gui should continue calling the method
-            return 1
-        return None
-        '''

@@ -1,6 +1,6 @@
-import csp_base
+import gac_base
 
-class CSP(csp_base.BaseCSP):
+class CSP(gac_base.BaseGAC):
     def __init__(self):
         # Tuples with pairs of variable indexes and constraints
         self.revise_queue = []

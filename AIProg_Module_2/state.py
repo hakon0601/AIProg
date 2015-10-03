@@ -1,11 +1,8 @@
 from copy import deepcopy
-from sys import setrecursionlimit
+from state_base import BaseState
 
-import state_base
 
-setrecursionlimit(10000)
-
-class State(state_base.BaseState):
+class State(BaseState):
     def __init__(self, constraints, variable_dict, csp):
         self.constraints = constraints
         self.csp = csp
@@ -26,18 +23,6 @@ class State(state_base.BaseState):
         for variable in self.variable_dict.values():
             tentative_h += (len(variable.domain) - 1)
         return tentative_h
-
-    def is_value_breaking_constraints(self, variable, value):
-        for constr in self.constraints:
-            # Selects the constraints in which the variable appears
-            if constr.has_variable(variable):
-                other_variable = self.variable_dict[constr.get_other_variable_index(variable)]
-                # If the other variable in the constraint has a singelton domain, where the value is equal return True
-                if len(other_variable.domain) == 1 and other_variable.domain[0] == value:
-                    return True
-        return False
-
-
 
     def reconstruct_path(self):
         path = [self]
