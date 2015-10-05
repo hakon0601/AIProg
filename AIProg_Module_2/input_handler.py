@@ -12,7 +12,6 @@ def read_file(filename):
     #k = int(raw_input("k: "))
 
     k = filename_k_dict[filename]
-
     variable_dict = {}
 
     nr_of_variables, nr_of_constraints = map(int, content[0].rstrip().split(" "))
@@ -27,9 +26,9 @@ def read_file(filename):
     # Reads all constraints into a list containing Constraint objects
     for j in range(i + 1, nr_of_variables + nr_of_constraints + 1):
         constraint_info =  map(int, content[j].rstrip().split(" "))
-        constraint = Constraint(variable_dict, involved_variables=constraint_info)
-        constraint.constraining_func = makefunc(["x", "y"], "x != y")
-        constraints.append(constraint)
+        constr = Constraint(variable_dict, involved_variables=constraint_info)
+        constr.constraining_func = makefunc(var_names=["x", "y"], expression="x != y")
+        constraints.append(constr)
 
     return variable_dict, constraints
 
@@ -37,10 +36,8 @@ def read_file(filename):
 def prompt_user_input(board):
     raise NotImplementedError
 
-
 def makefunc(var_names, expression):
     args = ""
     for n in var_names:
         args = args + "," + n
     return eval("(lambda " + args[1:] + ": " + expression + ")")
-

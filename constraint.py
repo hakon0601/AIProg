@@ -1,6 +1,6 @@
 
 
-class Constraint():
+class Constraint(object):
     def __init__(self, variable_dict, involved_variables=[]):
         self.involved_variables = involved_variables
         self.constraining_func = None

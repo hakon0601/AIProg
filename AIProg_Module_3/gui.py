@@ -27,10 +27,11 @@ class Gui(tk.Tk):
         self.buttons = [
             tk.Button(self, text="Scenario 0", command=lambda: self.start("scenarios/scenario0.txt")),
             tk.Button(self, text="Scenario 1", command=lambda: self.start("scenarios/scenario1.txt")),
-            tk.Button(self, text="Scenario 3", command=lambda: self.start("scenarios/scenario2.txt")),
-            tk.Button(self, text="Scenario 4", command=lambda: self.start("scenarios/scenario3.txt")),
-            tk.Button(self, text="Scenario 5", command=lambda: self.start("scenarios/scenario4.txt")),
-            tk.Button(self, text="Scenario 6", command=lambda: self.start("scenarios/scenario5.txt")),
+            tk.Button(self, text="Scenario 2", command=lambda: self.start("scenarios/scenario2.txt")),
+            tk.Button(self, text="Scenario 3", command=lambda: self.start("scenarios/scenario3.txt")),
+            tk.Button(self, text="Scenario 4", command=lambda: self.start("scenarios/scenario4.txt")),
+            tk.Button(self, text="Scenario 5", command=lambda: self.start("scenarios/scenario5.txt")),
+            tk.Button(self, text="Scenario 6", command=lambda: self.start("scenarios/scenario6.txt")),
             tk.Button(self, text="Scenario Test", command=lambda: self.start("scenarios/scenario_test.txt"))
         ]
         for btn in self.buttons:
@@ -71,7 +72,6 @@ class Gui(tk.Tk):
             self.run_a_star()
 
     def draw_board(self):
-        print "dim " + str(self.dimensions)
         offset_x = self.cell_width
         offset_y = self.cell_height
         for x in range(self.dimensions[0]):
@@ -177,3 +177,4 @@ class Gui(tk.Tk):
 if __name__ == "__main__":
     app = Gui(delay=50)
     app.mainloop()
+

@@ -45,6 +45,5 @@ def read_file(filename):
 def makefunc(var_names, expression):
     args = ""
     for n in var_names:
-        #TODO use join
         args = args + "," + n
     return eval("(lambda " + args[1:] + ": " + expression + ")")

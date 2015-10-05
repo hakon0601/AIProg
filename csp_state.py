@@ -30,7 +30,7 @@ class CSPState(state_base.BaseState):
     def generate_successor_nodes(self):
         successors = []
         # Generate one successor for every possible singleton domain of the variable with the smallest domain
-        variable_with_smallest_domain = self.get_variable_with_smallest_domain()
+        variable_with_smallest_domain = self.get_variable_with_smallest_heuristic()
         for value in variable_with_smallest_domain.domain:
             successor_variable_dict = deepcopy(self.variable_dict)
 
@@ -40,9 +40,6 @@ class CSPState(state_base.BaseState):
 
             # GAC rerun on the newly generated successor
             self.gac.gac_rerun(variable_with_smallest_domain.involved_constraints, successor_state.variable_dict)
-
-            # Calulate h after domain reductions
-            successor_state.h_value = successor_state.calculate_h()
 
             successors.append(successor_state)
         return successors
@@ -77,12 +74,23 @@ class CSPState(state_base.BaseState):
                 return False
         return True
 
+    def is_contradictory(self):
+        for variable in self.variable_dict.values():
+            # Contradictory
+            if len(variable.domain) == 0:
+                return True
+        return False
+
     # The heuristics function for each variable is the size of the domain.
     # By selecting the variable with the smallest domain, we have better chances of generating a good assumption
-    def get_variable_with_smallest_domain(self):
+    def get_variable_with_smallest_heuristic(self):
         variable_with_smallest_domain = None
         for variable in self.variable_dict.values():
-            if not variable_with_smallest_domain or len(variable.domain) < len(variable_with_smallest_domain.domain):
-                if len(variable.domain) != 1:
+            if len(variable.domain) != 1:
+                if not variable_with_smallest_domain or len(variable.domain) < len(variable_with_smallest_domain.domain):
                     variable_with_smallest_domain = variable
+                elif len(variable.domain) == len(variable_with_smallest_domain.domain):
+                    if len(variable.involved_constraints) > len(variable_with_smallest_domain.involved_constraints):
+                        variable_with_smallest_domain = variable
+
         return variable_with_smallest_domain

@@ -6,7 +6,6 @@ from time import time
 from board import Board
 from a_star_graph import AStarGraph
 from state import State
-#TODO We need to update the class hierarchy in the rapport for this module
 
 
 class Gui(tk.Tk):

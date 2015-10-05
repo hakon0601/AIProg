@@ -1,4 +1,4 @@
-from copy import deepcopy
+import time
 
 
 class Variable():

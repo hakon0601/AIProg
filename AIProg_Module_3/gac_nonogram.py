@@ -6,7 +6,6 @@ class GACNonogram(GACGeneral):
         GACGeneral.__init__(self)
 
 
-    # TODO This is the only method in csp that is not general. It should be. Very close to the other gac. can we fix this to make just one gac?
     # Reduces domain of current variable if constraining variable is singleton domain
     def revise(self, variable, constr, variable_dict):
         reduced = False
@@ -20,6 +19,7 @@ class GACNonogram(GACGeneral):
                     for constraining_permutation in constraining_variable.domain:
                         if constr.constraining_func(permutation[constraining_variable.direction_nr], constraining_permutation[variable.direction_nr]):
                             valid_domain.append(permutation)
+                            # Only keep one of the valid domain-value
                             break
                 if len(variable.domain) != len(valid_domain):
                     reduced = True

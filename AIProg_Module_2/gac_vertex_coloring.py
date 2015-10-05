@@ -18,6 +18,7 @@ class GACVertexColoring(GACGeneral):
                     for constraining_value in constraining_variable.domain:
                         if constr.constraining_func(value, constraining_value):
                             valid_domain.append(value)
+                            # Only keep one of the valid domain-value
                             break
                 if len(variable.domain) != len(valid_domain):
                     reduced = True

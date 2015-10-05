@@ -16,9 +16,8 @@ class Gui(tk.Tk):
         self.title("Vertex coloring problem")
         self.delay = delay
         self.oval_radius = 15
-        # TODO test with 10 different colors
         self.color_dict = {0: "blue", 1: "green", 2: "red", 3: "black", 4: "gray", 5: "yellow",
-                           6: "cyan", 7: "purple", 8: "aquamarine", 9: "pink"}
+                           6: "cyan", 7: "purple", 8: "tan", 9: "pink"}
 
         self.create_menu()
 
@@ -75,14 +74,13 @@ class Gui(tk.Tk):
 
         variable_dict, constraints = input_handler.read_file(filename)
         initial_state = CSPState(constraints, variable_dict, GACVertexColoring())
-        print "init State: " + str(initial_state)
         initial_state.gac.init_revise_queue(initial_state.constraints, initial_state.variable_dict)
         initial_state.gac.domain_filtering_loop(initial_state.variable_dict)
+        initial_state.h_value = initial_state.calculate_h()
 
         self.screen_width = self.winfo_screenwidth() - 100
         self.screen_height = self.winfo_screenheight() - 200
         self.normalize_coordinates(initial_state)
-        print "normalized init State: " + str(initial_state)
         self.canvas = tk.Canvas(self, width=self.screen_width, height=self.screen_height + 20, borderwidth=0, highlightthickness=0)
         self.canvas.pack(side="top", fill="both", expand="true")
 
@@ -98,6 +96,8 @@ class Gui(tk.Tk):
             self.a_star = AStarTree()
             self.a_star.add_start_state_to_open(initial_state)
             self.run_a_star()
+        else:
+            print "Failed"
 
 
     def back(self):
@@ -105,8 +105,6 @@ class Gui(tk.Tk):
         # destroy current gui elements
         for widget in self.winfo_children():
             widget.destroy()
-        # TODO restart counts
-
         # back to menu
         self.create_menu()
 
@@ -170,7 +168,6 @@ class Gui(tk.Tk):
             variable.y = (variable.y - old_min_y) / old_range_y * new_range_y
 
     def run_a_star(self):
-        print "running astar"
         continuing = False
         # if the algorithm is not finished with the board, do one iteration of the algorithm
         if not self.a_star.finished:
