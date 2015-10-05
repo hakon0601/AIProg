@@ -1,10 +1,11 @@
+import cProfile
 from time import time
 import Tkinter as tk
 from Tkinter import *
 from tkFileDialog import askopenfilename
 
 import input_handler
-from gac import GAC
+from gac_vertex_coloring import GACVertexColoring
 from a_star_tree import AStarTree
 from csp_state import CSPState
 
@@ -17,7 +18,7 @@ class Gui(tk.Tk):
         self.oval_radius = 15
         # TODO test with 10 different colors
         self.color_dict = {0: "blue", 1: "green", 2: "red", 3: "black", 4: "gray", 5: "yellow",
-                           6: "cyan", 7: "purple", 8: "aquamarine", 9: "pink", 10: "tan"}
+                           6: "cyan", 7: "purple", 8: "aquamarine", 9: "pink"}
 
         self.create_menu()
 
@@ -73,7 +74,7 @@ class Gui(tk.Tk):
         self.nodes = {}
 
         variable_dict, constraints = input_handler.read_file(filename)
-        initial_state = CSPState(constraints, variable_dict, GAC())
+        initial_state = CSPState(constraints, variable_dict, GACVertexColoring())
         print "init State: " + str(initial_state)
         initial_state.gac.init_revise_queue(initial_state.constraints, initial_state.variable_dict)
         initial_state.gac.domain_filtering_loop(initial_state.variable_dict)
@@ -82,7 +83,7 @@ class Gui(tk.Tk):
         self.screen_height = self.winfo_screenheight() - 200
         self.normalize_coordinates(initial_state)
         print "normalized init State: " + str(initial_state)
-        self.canvas = tk.Canvas(self, width=self.screen_width, height=self.screen_height, borderwidth=0, highlightthickness=0)
+        self.canvas = tk.Canvas(self, width=self.screen_width, height=self.screen_height + 20, borderwidth=0, highlightthickness=0)
         self.canvas.pack(side="top", fill="both", expand="true")
 
         # add back and cancel buttons to display
@@ -121,7 +122,7 @@ class Gui(tk.Tk):
             y2 = initial_state.variable_dict[constraint.involved_variables[1]].y + self.oval_radius/2
             self.canvas.create_line(x1, y1, x2, y2)
 
-        for variable in initial_state.variable_dict.values():
+        for key, variable in initial_state.variable_dict.items():
             x1 = variable.x
             y1 = variable.y + self.oval_radius
             x2 = x1 + self.oval_radius
@@ -129,12 +130,21 @@ class Gui(tk.Tk):
             color = "white"
             if len(variable.domain) == 1:
                 color = self.color_dict[variable.domain[0]]
-            self.nodes[variable.index] = self.canvas.create_oval(x1, y1, x2, y2, fill=color, tags="rect")
+            self.nodes[key] = self.canvas.create_oval(x1, y1, x2, y2, fill=color, tags="rect")
+
+        self.draw_text()
 
     def update_board(self, state):
         for variable in state.variable_dict.values():
             if len(variable.domain) == 1:
                 self.canvas.itemconfig(self.nodes[variable.index], fill=self.color_dict[variable.domain[0]])
+        self.update_text()
+
+    def draw_text(self):
+        self.generated_node_count_text = self.canvas.create_text(0, self.screen_height + 20, anchor=tk.SW)
+
+    def update_text(self):
+            self.canvas.itemconfig(self.generated_node_count_text, text="Number of generated states: " + str(len(self.a_star.open_nodes) + len(self.a_star.closed_nodes)))
 
     def normalize_coordinates(self, initial_state):
         old_min_x = float("inf")
@@ -185,4 +195,6 @@ class Gui(tk.Tk):
 
 if __name__ == "__main__":
     app = Gui(delay=1)
+    #cProfile.run("app.mainloop()")
     app.mainloop()
+

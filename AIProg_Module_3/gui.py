@@ -4,8 +4,10 @@ from tkFileDialog import askopenfilename
 
 import input_handler
 from csp_state import CSPState
-from gac import GAC
+from gac_nonogram import GACNonogram
 from a_star_tree import AStarTree
+from time import time
+import cProfile
 
 
 class Gui(tk.Tk):
@@ -41,13 +43,14 @@ class Gui(tk.Tk):
         self.openFileButton.pack(anchor=W)
 
     def start(self, scenario):
+        self.time = time()
         self.cells = {}
         self.destroy_menu()
         self.dimensions, self.variable_dict, self.constraints = input_handler.read_file(scenario)
 
-        screen_width = (self.dimensions[0] + 2)*self.cell_width
-        screen_height = (self.dimensions[1] + 2)*self.cell_height
-        self.canvas = tk.Canvas(self, width=screen_width, height=screen_height, borderwidth=0, highlightthickness=0)
+        self.screen_width = (self.dimensions[0] + 2)*self.cell_width
+        self.screen_height = (self.dimensions[1] + 2)*self.cell_height
+        self.canvas = tk.Canvas(self, width=self.screen_width, height=self.screen_height + 60, borderwidth=0, highlightthickness=0)
         self.canvas.pack(side="top", fill="both", expand="true")
         self.draw_board()
 
@@ -56,7 +59,7 @@ class Gui(tk.Tk):
         self.backButton.pack()
         self.cancelButton.pack()
 
-        initial_state = CSPState(self.constraints, self.variable_dict, GAC())
+        initial_state = CSPState(self.constraints, self.variable_dict, GACNonogram())
         initial_state.gac.init_revise_queue(initial_state.constraints, initial_state.variable_dict)
         initial_state.gac.domain_filtering_loop(initial_state.variable_dict)
 
@@ -78,6 +81,7 @@ class Gui(tk.Tk):
                 x2 = x1 + self.cell_width
                 y2 = y1 - self.cell_height
                 self.cells[x, y] = self.canvas.create_rectangle(x1, y1, x2, y2, fill="white", tags="rect")
+        self.draw_text()
 
     def update_board(self, state):
         for variable in state.variable_dict.values():
@@ -90,6 +94,21 @@ class Gui(tk.Tk):
                     for i in range(self.dimensions[1]):
                         if variable.domain[0][i]:
                             self.canvas.itemconfig(self.cells[variable.direction_nr, i], fill="blue")
+
+    def draw_text(self):
+        self.generated_node_count_text = self.canvas.create_text(0, self.screen_height + 20, anchor=tk.SW)
+        self.canvas.itemconfig(self.generated_node_count_text, text="Number of generated states: 1")
+        self.expanded_node_count_text = self.canvas.create_text(0, self.screen_height + 40, anchor=tk.SW)
+        self.canvas.itemconfig(self.expanded_node_count_text, text="Number of expanded states: 0")
+        self.path_len_text = self.canvas.create_text(0, self.screen_height + 60, anchor=tk.SW)
+        self.canvas.itemconfig(self.path_len_text, text="Path length: 1")
+
+
+    def update_text(self):
+        self.canvas.itemconfig(self.generated_node_count_text, text="Number of generated states: " + str(len(self.a_star.open_nodes) + len(self.a_star.closed_nodes)))
+        self.canvas.itemconfig(self.expanded_node_count_text, text="Number of expanded states: " + str(len(self.a_star.closed_nodes)))
+        self.canvas.itemconfig(self.path_len_text, text="Path length: " + str(self.path_len))
+
 
     def run_a_star(self):
         print "running astar"
@@ -106,8 +125,12 @@ class Gui(tk.Tk):
                 continuing = True
             else:
                 print("Success")
+                print "Elapsed time: " + str(time() - self.time)
                 self.a_star.finished = True
+            self.path_len = len(result.reconstruct_path())
+
         self.update_board(result)
+        self.update_text()
         # as long as at least one of the algorithms is not finished,
         # run_a_star will be called over and over again
         if continuing:

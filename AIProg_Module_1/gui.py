@@ -1,29 +1,24 @@
 import Tkinter as tk
 from tkFileDialog import askopenfilename
 from Tkinter import *
+from time import time
 
 from board import Board
 from a_star_graph import AStarGraph
 from state import State
+#TODO We need to update the class hierarchy in the rapport for this module
 
 
 class Gui(tk.Tk):
     def __init__(self, delay, diagonal=False, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         self.title("A*")
+        self.search_methods = ["Best-first", "Breadth-first", "Depth-first"]
         self.delay = delay
         self.diagonal = diagonal
         self.cells = None
         self.cell_width = 25
         self.cell_height = 25
-        # path length for the different search methods, added when/if algorithm is finished
-        self.path_len = [None, None, None]
-        # search methods that will run simultaneously
-        self.search_methods = [None, None, None]
-        # gui text for node count and path length
-        self.generated_node_count_texts = [None, None, None]
-        self.path_len_texts = [None, None, None]
-        self.paths = [None, None, None]
 
         self.create_menu()
 
@@ -73,18 +68,30 @@ class Gui(tk.Tk):
         self.openFileButton.destroy()
 
     def start(self, filename):
+        self.time = time()
         # destroy menu when algorithm illustrations begins
         self.destroy_menu()
+
+        # path length for the different search methods, added when/if algorithm is finished
+        self.path_len = [None, None, None]
+        # search methods that will run simultaneously
+        # gui text for generated and expanded node count and path length
+        self.search_method_texts = [None, None, None]
+        self.generated_node_count_texts = [None, None, None]
+        self.expanded_node_count_texts = [None, None, None]
+        self.path_len_texts = [None, None, None]
+
+        self.last_state = [None, None, None]
+        self.times = [None, None, None]
+
         # instantiate the board
         self.board = Board(filename, self.diagonal)
 
         self.cells = {}
 
-        # initialize AStar instances for the search algorithms
+        # initialize AStar instances for the three search algorithms
         self.a_stars = [
-            AStarGraph(search_method="Best-first"),
-            AStarGraph(search_method="Breadth-first"),
-            AStarGraph(search_method="Depth-first")
+            AStarGraph(search_method=search_method) for search_method in self.search_methods
         ]
 
         # Dictionary containing all the graphic rectangle objects, indexed by (i, x, y) where i is the index
@@ -111,48 +118,42 @@ class Gui(tk.Tk):
 
         self.run_a_star()
 
+    # Goes back to the main menu
     def back(self):
-        # goes back to menu
-
         # destroy current gui elements
         for widget in self.winfo_children():
             widget.destroy()
-
-        # restart counts
-        self.generated_node_count_texts = [None, None, None]
-        self.path_len = [None, None, None]
-
         # back to menu
         self.create_menu()
-    
+
     def cancel(self):
-        # destroy window. quit program.
+        # Destroy window. Quit program.
         self.destroy()
 
     def run_a_star(self):
         continuing = False
-        # go through the boards (one for each search algorithm)
+        # Run a step in the A* algorithm (one for each search algorithm)
         for i in range(len(self.a_stars)):
-            # if the algorithm is not finished with the board, do one iteration of the algorithm
+            # If the algorithm is not finished with the board, do one iteration of the algorithm
             if not self.a_stars[i].finished:
                 result = self.a_stars[i].do_one_step()
                 if not result:
-                    # there are no more nodes in open nodes -> algorithm did not reach goal, fail
+                    # There are no more nodes in open nodes -> algorithm did not reach goal, fail
                     print("Failed")
                     self.a_stars[i].finished = True
                     continue
-                if result.h_value != 1:
+                if result.h_value != 0:
                     # the algorithm is not finished
                     continuing = True
                 else:
                     print("Success")
                     self.a_stars[i].finished = True
-                    self.path_len[i] = round(result.g_value * 10, 2)
-                self.paths[i] = result
-        self.update_board()
-        for i in range(len(self.paths)):
-            if self.paths[i]:
-                self.draw_path(self.paths[i], i)
+                    self.times[i] = time() - self.time
+                    print "Elapsed time: " + str(self.times)
+
+                self.last_state[i] = result
+                self.update_board(i)
+
         # as long as at least one of the algorithms is not finished,
         # run_a_star will be called over and over again
         if continuing:
@@ -184,55 +185,49 @@ class Gui(tk.Tk):
     def draw_text(self, i):
         offset_x = (self.board.dim[0] + 1)*self.cell_width * i
         # Creating text items for labeling search methods
-        self.search_methods[i] = self.canvas.create_text(offset_x, 0, anchor=tk.NW)
-        self.canvas.itemconfig(self.search_methods[i], text=self.a_stars[i].search_method)
-        self.canvas.index(self.search_methods[i], 12)
+        self.search_method_texts[i] = self.canvas.create_text(offset_x, 0, anchor=tk.NW)
+        self.canvas.itemconfig(self.search_method_texts[i], text=self.search_methods[i])
 
         self.generated_node_count_texts[i] = self.canvas.create_text(offset_x, (self.board.dim[0] + 1)*self.cell_height, anchor=tk.NW)
-        self.canvas.itemconfig(self.generated_node_count_texts[i], text="Number of generated nodes: " + str(len(self.a_stars[i].open_nodes) + len(self.a_stars[i].closed_nodes)))
-        self.canvas.index(self.generated_node_count_texts[i], 13)
-
-        self.path_len_texts[i] = self.canvas.create_text((self.board.dim[0] + 1)*self.cell_width * i, (self.board.dim[0] + 2)*self.cell_height, anchor=tk.NW)
-        self.canvas.itemconfig(self.path_len_texts[i], text="")
-        self.canvas.index(self.path_len_texts[i], 14)
+        self.expanded_node_count_texts[i] = self.canvas.create_text(offset_x, (self.board.dim[0] + 2)*self.cell_height, anchor=tk.NW)
+        self.path_len_texts[i] = self.canvas.create_text(offset_x, (self.board.dim[0] + 3)*self.cell_height, anchor=tk.NW)
 
     def update_text(self, i):
-        for i in range(3):
-            self.canvas.itemconfig(self.search_methods[i], text=self.a_stars[i].search_method)
-            self.canvas.itemconfig(self.generated_node_count_texts[i], text="Number of generated nodes: " + str(len(self.a_stars[i].open_nodes) + len(self.a_stars[i].closed_nodes)))
-            if self.path_len[i] == 0:
-                self.canvas.itemconfig(self.path_len_texts[i], text="Length of path: None")
-            else:
-                self.canvas.itemconfig(self.path_len_texts[i], text="Length of path: " + str(self.path_len[i]))
+        self.canvas.itemconfig(self.generated_node_count_texts[i], text="Number of generated nodes: " + str(len(self.a_stars[i].open_nodes) + len(self.a_stars[i].closed_nodes)))
+        self.canvas.itemconfig(self.expanded_node_count_texts[i], text="Number of expanded nodes: " + str(len(self.a_stars[i].closed_nodes)))
+        self.canvas.itemconfig(self.path_len_texts[i], text="Length of path: " + str(self.last_state[i].g_value))
 
-    def update_board(self):
-        for i in range(len(self.a_stars)):
-            offset_x = (self.board.dim[0] + 1)*self.cell_width * i
-            offset_y = self.cell_height
-            for node in self.a_stars[i].open_nodes:
-                # Avoid drawing over start and goal
-                if node.g_value == 0 or node.h_value == 0:
-                    continue
-                x1 = node.x * self.cell_width + offset_x
-                y1 = self.board.dim[1]*self.cell_height - node.y * self.cell_height + offset_y
-                x2 = x1 + self.cell_width
-                y2 = y1 - self.cell_height
-                self.canvas.itemconfig(self.cells[i, node.y, node.x], fill="gray")
-            for node in self.a_stars[i].closed_nodes:
-                # Avoid drawing over start and goal
-                if node.g_value == 0 or node.h_value == 0:
-                    continue
-                x1 = node.x * self.cell_width + offset_x
-                y1 = self.board.dim[1]*self.cell_height - node.y * self.cell_height + offset_y
-                x2 = x1 + self.cell_width
-                y2 = y1 - self.cell_height
-                self.canvas.itemconfig(self.cells[i, node.y, node.x], fill="red")
-            self.update_text(i)
+    def update_board(self, i):
+        offset_x = (self.board.dim[0] + 1)*self.cell_width * i
+        offset_y = self.cell_height
+        for node in self.a_stars[i].open_nodes:
+            # Avoid drawing over start and goal
+            if node.g_value == 0 or node.h_value == 0:
+                continue
+            x1 = node.x * self.cell_width + offset_x
+            y1 = self.board.dim[1]*self.cell_height - node.y * self.cell_height + offset_y
+            x2 = x1 + self.cell_width
+            y2 = y1 - self.cell_height
+            self.canvas.itemconfig(self.cells[i, node.y, node.x], fill="gray")
+        for node in self.a_stars[i].closed_nodes:
+            # Avoid drawing over start and goal
+            if node.g_value == 0 or node.h_value == 0:
+                continue
+            x1 = node.x * self.cell_width + offset_x
+            y1 = self.board.dim[1]*self.cell_height - node.y * self.cell_height + offset_y
+            x2 = x1 + self.cell_width
+            y2 = y1 - self.cell_height
+            self.canvas.itemconfig(self.cells[i, node.y, node.x], fill="red")
+        self.draw_path(i)
+        self.update_text(i)
 
-    def draw_path(self, current_state, i):
-        path = current_state.reconstruct_path()
+    def draw_path(self, i):
+        last_state = self.last_state[i]
+        path = last_state.reconstruct_path()
         for node in path:
-            self.canvas.itemconfig(self.cells[i, node.y, node.x], fill="green")
+            # Avoid drawing over the start and goal
+            if node.g_value != 0 and node.h_value != 0:
+                self.canvas.itemconfig(self.cells[i, node.y, node.x], fill="green")
 
 
 if __name__ == "__main__":

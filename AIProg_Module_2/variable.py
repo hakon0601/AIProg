@@ -1,7 +1,6 @@
-from variabel_base import BaseVariabel
 
 
-class Variable(BaseVariabel):
+class Variable():
     def __init__(self, index, x, y, k):
         self.index = index
         self.x = x

@@ -1,8 +1,7 @@
-import variabel_base
 from copy import deepcopy
 
 
-class Variable(variabel_base.BaseVariabel):
+class Variable():
     def __init__(self, index, direction, direction_nr, length, segments=[]):
         self.direction_nr = direction_nr
         self.index = index
@@ -12,34 +11,35 @@ class Variable(variabel_base.BaseVariabel):
         self.domain = self.find_permutations(segments, length)
         self.involved_constraints = []
 
-
-    # TODO rewrite this method as it is stolen code
     def find_permutations(self, segments, length):
-        if len(segments) == 0:
-            return [[False for bool in range(length)]]
+        permutations = self.one_segment_permutations(segments=segments, segment_index=0, list_size=length)
+        for perm in permutations:
+            if len(perm) != length:
+                perm += [False for i in range(length - len(perm))]
+        return permutations
 
+    def one_segment_permutations(self, segments, segment_index, list_size):
+        if segment_index == len(segments):
+            return [[]]
+        segment_size = segments[segment_index]
+        # This domain permutation is invalid if there is not room for all segments
+        if segment_size > list_size:
+            return -1
         permutations = []
-
-        for start in range(length - segments[0] + 1):
-            permutation = []
-            for x in range(start):
-                permutation.append(False)
-            for x in range(start, start + segments[0]):
-                permutation.append(True)
-            x = start + segments[0]
-            if x < length:
-                permutation.append(False)
-                x += 1
-            if x == length and len(segments) == 0:
-                permutations.append(permutation)
-                break
-            sub_start = x
-            sub_rows = self.find_permutations(segments[1:len(segments)], length - sub_start)
-            for sub_row in sub_rows:
-                sub_permutation = deepcopy(permutation)
-                for x in range(sub_start, length):
-                    sub_permutation.append(sub_row[x - sub_start])
-                permutations.append(sub_permutation)
+        for i in range(list_size):
+            if i + segment_size <= list_size:
+                perm = [False for j in range(i)]
+                for k in range(i, i + segment_size):
+                    perm.append(True)
+                more_permutations = self.one_segment_permutations(segments, segment_index=segment_index+1, list_size=list_size-(k+1+1))
+                if more_permutations == -1:
+                    continue
+                for p in more_permutations:
+                    if len(p) > 0:
+                        new_perm = perm + [False] + p
+                    else:
+                        new_perm = perm
+                    permutations.append(new_perm)
         return permutations
 
     def __str__(self):
@@ -47,8 +47,3 @@ class Variable(variabel_base.BaseVariabel):
 
     def __repr__(self):
         return str(self)
-
-    def __eq__(self, other):
-        if self.direction == other.direction and self.index == other.index and self.direction_nr == other.direction_nr:
-            return True
-        return False

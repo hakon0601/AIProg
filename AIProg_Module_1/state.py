@@ -1,9 +1,8 @@
 from math import sqrt
+from state_base import BaseState
 
-import state_base
 
-
-class State(state_base.BaseState):
+class State(BaseState):
     def __init__(self, x, y, board):
         self.x = x
         self.y = y

@@ -29,7 +29,7 @@ class AStarGraph(AStarGeneral):
             successor_nodes = current_node.generate_successor_nodes()
             print "successors: " + str(successor_nodes)
             for successor in successor_nodes:
-                # If the successor is already generated
+                # If the successor is already generated use that instance instead
                 if self.generated_states[successor.getID()]:
                     successor = self.generated_states[successor.getID()]
 
