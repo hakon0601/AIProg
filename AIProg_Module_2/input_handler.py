@@ -8,10 +8,11 @@ def read_file(filename):
 
     filename_k_dict = {"graphs/graph0.txt": 3, "graphs/graph1.txt": 3, "graphs/graph-color-1.txt": 4, "graphs/graph-color-2.txt": 4,
                        "graphs/rand-50-4-color1.txt": 4, "graphs/rand-100-4-color1.txt": 4,
-                       "graphs/rand-100-6-color1.txt": 6, "graphs/spiral-500-4-color1.txt": 4}
+                       "graphs/rand-100-6-color1.txt": 6, "graphs/spiral-500-4-color1.txt": 4, "gcolor1.txt": 4, "gcolor2.txt": 4, "gcolor3.txt": 4}
     #k = int(raw_input("k: "))
 
-    k = filename_k_dict[filename]
+    #k = filename_k_dict[filename]
+    k =4
     variable_dict = {}
 
     nr_of_variables, nr_of_constraints = map(int, content[0].rstrip().split(" "))
