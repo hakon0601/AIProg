@@ -1,5 +1,6 @@
 
 def read_file(board, filename):
+    print filename
     with open(filename) as f:
         content = f.readlines()
 
