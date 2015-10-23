@@ -19,8 +19,7 @@ class State():
         self.move = move
         self.is_max = is_max
 
-    def generate_min_successor_nodes(self):
-        #print "Generating min nodes (C)"
+    def generate_chance_successor_nodes(self):
         successor_nodes = []
         # Generate one state for each possible generated node
         if self.board.board_has_space():
@@ -33,9 +32,9 @@ class State():
                         else:
                             value = 4
                         # 2 board
-                        new_2_board = copy.deepcopy(self.board.board)
-                        new_2_board[y][x] = value
-                        child = State(board=Game2048(new_2_board), depth=self.depth-1, is_max=False)
+                        new_2_board = copy.deepcopy(self.board)
+                        new_2_board.board[y][x] = value
+                        child = State(board=new_2_board, depth=self.depth-1, is_max=False)
                         child.parent = self
                         self.children.append(child)
                         successor_nodes.append(child)

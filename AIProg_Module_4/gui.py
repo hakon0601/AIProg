@@ -1,8 +1,9 @@
 import Tkinter as tk
 from Tkinter import *
 from game2048 import Game2048
-from minimax import Minimax
+from expectimax import Expectimax
 from state import State
+from time import time
 
 class Gui(tk.Tk):
     def __init__(self, delay, diagonal=False, *args, **kwargs):
@@ -18,29 +19,43 @@ class Gui(tk.Tk):
         #self.bind_keys()
 
         self.color_dict = self.fill_color_dict()
-        self.game_board = Game2048()
-        self.board = self.game_board.board
-        self.game_board.generate_new_node()
-        self.depth = 4
-        self.move_count = 0
-        self.minimax = Minimax()
+        self.results = []
+        self.start_game()
 
-        self.draw_board()
-        self.run_algorithm()
-        #print "instances of State: " + str(State._ids)
+    def start_game(self):
+        if len(self.results) < 5:
+            self.game_board = Game2048(board=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
+            self.board = self.game_board.board
+            self.game_board.generate_new_node()
+            self.depth = 4
+            self.move_count = 0
+            self.expectimax = Expectimax()
+
+            self.draw_board()
+            self.time = time()
+            self.run_algorithm()
+            #print "instances of State: " + str(State._ids)
+        else:
+            print self.results
+
 
     def run_algorithm(self):
         if self.game_board.open_cells_count() < 4:
-            self.depth = 4
+            self.depth = 5
         else:
-            self.depth = 4
+            self.depth = 5
         continuing = True
         if self.game_board.is_game_over():
-            print "finished cause game_board is gameover"
+            largest_tile = self.game_board.get_largest_tile()
+            print "largest tile", largest_tile
+            print "time elapsed", time() - self.time
+            self.results.append(largest_tile)
             continuing = False
+            return self.start_game()
         current_node = State(self.game_board, self.depth)
         self.move_count += 1
-        chosen_move = self.minimax.minimax_alpha_beta(current_node, self.depth, -float("inf"), float("inf"), None)
+        chosen_move = self.expectimax.run_expectimax(current_node, self.depth, -float("inf"), float("inf"), None)
+        #TODO what is this? Continuing
         if chosen_move == None:
             Continuing = False
         elif chosen_move == 0:

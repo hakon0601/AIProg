@@ -1,28 +1,28 @@
 
-class Minimax():
+class Expectimax():
     # returns terminal value, return the best value for max, best value for minimax
     def __init__(self):
         return
 
-    def minimax_alpha_beta(self, node, depth, a, b, direction):
+    def run_expectimax(self, node, depth, a, b, chance):
         if depth == 0:
             node.set_h()
             return node.h_value
 
-        if direction==None:
+        if chance==None:
             r = node.generate_max_successor_nodes()
             if len(r) == 0 or r == None:
                 return None
             left = right = up = down = None
             for child in node.children:
                 if child.move == "left":
-                    left = max(a, self.minimax_alpha_beta(child, depth-1, a, b, True))
+                    left = max(a, self.run_expectimax(child, depth-1, a, b, True))
                 elif child.move == "right":
-                    right = max(a, self.minimax_alpha_beta(child, depth-1, a, b, True))
+                    right = max(a, self.run_expectimax(child, depth-1, a, b, True))
                 elif child.move == "up":
-                    up = max(a, self.minimax_alpha_beta(child, depth-1, a, b, True))
+                    up = max(a, self.run_expectimax(child, depth-1, a, b, True))
                 elif child.move == "down":
-                    down = max(a, self.minimax_alpha_beta(child, depth-1, a, b, True))
+                    down = max(a, self.run_expectimax(child, depth-1, a, b, True))
 
             # print "left: " + str(left)
             # print "right: " + str(right)
@@ -39,19 +39,19 @@ class Minimax():
             elif result==down:
                 return "down"
 
-        # Min function
-        elif direction:
+        # Chance function
+        elif chance:
             # this is a left, right, up, down node
-            # generate min successors and returns the average value
+            # generate successors and returns the average value
             # a = -inf, b = inf
-            node.generate_min_successor_nodes()
+            node.generate_chance_successor_nodes()
             if len(node.children) == 0:
                 node.set_h()
                 return node.h_value
             l = []
             for child in node.children:
                 # b = min(b, self.minimax_alpha_beta(child, depth-1, a, b, False))
-                l.append(self.minimax_alpha_beta(child, depth-1, a, b, False))
+                l.append(self.run_expectimax(child, depth-1, a, b, False))
                 node.a = a
                 node.b = b
 
@@ -59,13 +59,13 @@ class Minimax():
             #return b
 
         # Max function
-        elif not direction:
+        elif not chance:
             node.generate_max_successor_nodes()
             if len(node.children) == 0:
                 node.set_h()
                 return node.h_value
             for child in node.children:
-                a = max(a, self.minimax_alpha_beta(child, depth-1, a, b, True))
+                a = max(a, self.run_expectimax(child, depth-1, a, b, True))
                 node.a = a
                 node.b = b
             return a
