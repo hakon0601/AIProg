@@ -23,13 +23,8 @@ class Expectimax():
                     up = max(a, self.run_expectimax(child, depth-1, a, b, True))
                 elif child.move == "down":
                     down = max(a, self.run_expectimax(child, depth-1, a, b, True))
-
-            # print "left: " + str(left)
-            # print "right: " + str(right)
-            # print "up: " + str(up)
-            # print "down: " + str(down)
-            # TODO return max of left, right, up, down
             result =  max(left,right,up,down)
+            #Returns which move to make
             if result==left:
                 return "left"
             elif result==right:
@@ -56,7 +51,6 @@ class Expectimax():
                 node.b = b
 
             return reduce(lambda x, y: x + y, l) / len(l)
-            #return b
 
         # Max function
         elif not chance:

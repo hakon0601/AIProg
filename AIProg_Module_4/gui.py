@@ -30,11 +30,9 @@ class Gui(tk.Tk):
             self.depth = 4
             self.move_count = 0
             self.expectimax = Expectimax()
-
             self.draw_board()
             self.time = time()
             self.run_algorithm()
-            #print "instances of State: " + str(State._ids)
         else:
             print self.results
 
@@ -68,10 +66,6 @@ class Gui(tk.Tk):
             self.game_board.move_up()
         elif chosen_move == "down":
             self.game_board.move_down()
-            # if not self.game_board.move_left():
-            #     if not self.game_board.move_up():
-            #         if not self.game_board.move_right():
-            #             self.game_board.move_down()
         else:
             print "finished because of error in minimax chosen move"
         self.game_board.generate_new_node()
@@ -120,6 +114,7 @@ class Gui(tk.Tk):
             '1024': "light goldenrod",
             '2048': "firebrick",
             '4096': "dim grey",
+            '8192': "light goldenrod",
         }
         return color_dict
 
