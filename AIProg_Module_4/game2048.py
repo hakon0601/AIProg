@@ -3,10 +3,8 @@ import copy
 import itertools
 
 class Game2048():
-    #def __init__(self, board=[[0,0,0,0],[0,0,0,0],[0,0,128,16],[1024,512,256,128]]):
     def __init__(self, board=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]):
         self.board = board
-        #self.board = [[2,4,2,8],[16,32,2,4],[4,2,16,16],[32,64,64,128]]
 
     def is_game_over(self):
         if self.can_move() == False and self.board_has_space() == False:
@@ -201,7 +199,6 @@ class Game2048():
                 if self.board[y][x] == 0:
                     open_cells += 1
         return open_cells
-        #return 0
 
     def sort_snake(self):
         sorted_list = []
@@ -211,27 +208,26 @@ class Game2048():
         sorted_list.sort()
         sorted_list.reverse()
 
-        h_value_left = 0
-        h_value_right = 0
-
+        h_value = 0
+        #Give no credit if this pattern leads to a gameover
         if self.is_game_over():
             return 0
 
+        #Give bonuses for a snake-look-alike order
+        #Where the highest tile is in the top left corner
         for i in range(3):
-            h_value_left += self.board[3][i] * 30 * pow(0.8, i)
+            h_value += self.board[3][i] * 30 * pow(0.8, i)
 
-        h_value_left += self.board[3][0]*20
+        h_value += self.board[3][0]*20
 
         if self.board[3][0] == sorted_list[0] or sorted_list[0] > 500:
-            #if sorted_list[0] < 1000 or self.board[3][3] == self.board[3][2] or self.board[3][3] == 0 or self.board[3][3] >= self.board[2][3]:
             for i in range(3):
-                h_value_left += self.board[2][3-i] * 6 * pow(0.5, i)
+                h_value += self.board[2][3-i] * 6 * pow(0.5, i)
         else:
             for i in range(3):
-                h_value_left += self.board[2][i] * 6 * pow(0.5, i)
+                h_value += self.board[2][i] * 6 * pow(0.5, i)
 
-        #return max(h_value_left, h_value_right)
-        return h_value_left
+        return h_value
 
 
     def print_board(self):
