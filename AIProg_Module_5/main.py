@@ -13,8 +13,8 @@ class ImageRecog():
     # nb = # bits, nh = # hidden nodes (in the single hidden layer)
     # lr = learning rate
 
-    def __init__(self, nb=28*28, nh=10, lr=.1):
-        self.images, self.labels = mnist_basics.gen_x_flat_cases(10)
+    def __init__(self, nb=28*28, nh=400, lr=.4):
+        self.images, self.labels = mnist_basics.gen_x_flat_cases(800)
 #        self.cases = mnist_basics.gen_x_flat_cases(10)
         self.lrate = lr
         self.build_ann(nb,nh,lr)
@@ -35,17 +35,19 @@ class ImageRecog():
         self.predictor = theano.function([input],[x2,x1])
         self.trainer = theano.function([input, target],error, updates=backprop_acts)
 
-    def do_training(self, epochs=100, test_interval=None):
+    def do_training(self, epochs=3, test_interval=None):
         #graph.start_interactive_mode()
         errors = []
         if test_interval: self.avg_vector_distances = []
         for i in range(epochs):
+            print "epoch: ", i
             error = 0
-            for i in range(len(self.images)):
+            for j in range(len(self.images)):
+                print "image nr: ", j
                 tar = np.zeros(10)
-                tar[self.labels[i]] = 1
+                tar[self.labels[j]] = 1
                 #tar = theano.shared(tar)
-                error += self.trainer(self.images[i], tar)
+                error += self.trainer(self.images[j], tar)
             print error
             errors.append(error)
         #    if test_interval: self.consider_interim_test(i,test_interval)
@@ -56,8 +58,9 @@ class ImageRecog():
         #                     ytitle='Avg Hidden-Node Vector Distance',title='')
 
     def do_testing(self,scatter=True):
+        self.test_images, self.test_labels = mnist_basics.gen_x_flat_cases(8000, type="testing")
         hidden_activations = []
-        for c in self.images:
+        for c in self.test_images:
             end,hact = self.predictor(c)
             hidden_activations.append(end)
         #if scatter: graph.simple_scatter(hidden_activations,radius=8)
@@ -68,11 +71,11 @@ image_recog.do_training()
 result = image_recog.do_testing()
 
 count = 0
-for i in range(8):
-    print image_recog.labels[i]
-    print result[i]
+for i in range(len(image_recog.images)):
+    #print image_recog.labels[i]
+    #print result[i]
     b = int(image_recog.labels[i]) == int(np.where(result[i] == max(result[i]))[0][0])
-    print b
+    #print b
     if b:
         count += 1
 print "statistics:", (count/float(8)) * 100

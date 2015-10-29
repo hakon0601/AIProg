@@ -64,7 +64,7 @@ def load_x_mnist(x, dataset="training", digits=numpy.arange(10), path= __mnist_p
 
     ind = [ k for k in range(size) if lbl[k] in digits ]
 #    N = len(ind)
-    N = 10
+    N = x
 
     images = numpy.zeros((N, rows, cols), dtype=numpy.uint8)
     labels = numpy.zeros((N, 1), dtype=numpy.int8)
