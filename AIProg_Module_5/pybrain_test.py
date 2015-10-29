@@ -1,37 +1,29 @@
+from mnist_basics import *
+
 from pybrain.tools.shortcuts import buildNetwork
 from pybrain.datasets import SupervisedDataSet
 from pybrain.supervised.trainers import BackpropTrainer
 from pybrain import TanhLayer
-import theano
 
-net = buildNetwork(2, 3, 1, bias=True, hiddenclass=TanhLayer)
+nr_of_cases = 10
 
-#res = net.activate([2, 1])
-#print res
+images, labels = gen_flat_cases()
 
-ds = SupervisedDataSet(2, 1)
+net = buildNetwork(784, 60, 10, bias=True, hiddenclass=TanhLayer)
 
-ds.addSample((0, 0), (0,))
-ds.addSample((0, 1), (1,))
-ds.addSample((1, 0), (1,))
-ds.addSample((1, 1), (0,))
+ds = SupervisedDataSet(784, 10)
 
-#for inp, target in ds:
-#    print inp, target
+for i in range(10): #len(images)):
+    expected_res = [0 for i in range(10)]
+    expected_res[labels[i]] = 1
+    ds.addSample(images[i], expected_res)
 
-#print ds['input']
 trainer = BackpropTrainer(net, ds)
 
-print net.activate([0, 1])
+print "result 0", [(net.activate(images[i]), labels[i]) for i in range(10)]
 
-for i in range(2000):
+for i in range(200):
+    print i
     print trainer.train()
 
-print net.activate([0, 0])
-print net.activate([0, 1])
-print net.activate([1, 0])
-print net.activate([1, 1])
-
-
-#print trainer.trainUntilConvergence()
-
+print "result 1", [(net.activate(images[i]), labels[i]) for i in range(10)]

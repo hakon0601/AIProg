@@ -7,10 +7,10 @@ import theano.tensor.nnet as Tann
 import numpy as np
 import matplotlib.pyplot as plt
 import theano.tensor.nnet as Tann
-import grapher as graph
-import graphviz # Needed for the import of pydot
-import pydot # for printing out theano function graphs to a file
+from graphviz import *# Needed for the import of pydot
+from pydot import * # for printing out theano function graphs to a file
 
+#import grapher as graph
 
 # Theano pretty-print
 def ppth(obj, fancy=True, graph=False, fid='/Users/keithd/temp/pydot_graph',fmt='pdf'):
