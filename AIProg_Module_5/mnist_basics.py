@@ -63,17 +63,25 @@ def load_x_mnist(x, dataset="training", digits=numpy.arange(10), path= __mnist_p
     fimg.close()
 
     ind = [ k for k in range(size) if lbl[k] in digits ]
-    N = len(ind)
+#    N = len(ind)
+    N = 10
 
     images = numpy.zeros((N, rows, cols), dtype=numpy.uint8)
     labels = numpy.zeros((N, 1), dtype=numpy.int8)
+
+
     for i in range(x):
         images[i] = numpy.array(img[ ind[i]*rows*cols : (ind[i]+1)*rows*cols ]).reshape((rows, cols))
         labels[i] = lbl[ind[i]]
 
     return images, labels
 
-
+# TODO also fix
+def gen_x_flat_cases(x, digits=numpy.arange(10),type='training',cases=None):
+     images, labels = cases if cases else load_x_mnist(x, type, digits=digits)
+     i2 = list(map(flatten_image,images))
+     l2 = kd_reduce((lambda a, b: a + b), labels.tolist())
+     return i2, l2
 
 
 
