@@ -42,7 +42,8 @@ class ImageRecog():
             print("epoch: ", i)
             error = 0
             for j in range(len(self.images)):
-                #print("image nr: ", j)
+                if j % 1000 == 0:
+                    print("image nr: ", j)
                 tar = [0] * 10
                 tar[self.labels[j]] = 1
                 #tar = theano.shared(tar)
@@ -58,19 +59,41 @@ class ImageRecog():
         #    graph.simple_plot(self.avg_vector_distances,xtitle='Epoch',
         #                     ytitle='Avg Hidden-Node Vector Distance',title='')
 
-    def do_testing(self, nr_of_testing_images, scatter=True):
-        self.test_images, self.test_labels = gen_x_flat_cases(nr_of_testing_images, type="testing")
-        #self.test_images, self.test_labels = gen_flat_cases(type="testing")
+    def do_testing(self,scatter=True, blind_test_images=None):
+        if not blind_test_images:
+            self.test_images, self.test_labels = mnist_basics.gen_x_flat_cases(100, type="testing")
+            self.preprosessing(self.test_images)
+        else:
+            self.test_images = blind_test_images
+            self.test_labels = None
         hidden_activations = []
         for c in self.test_images:
             end = self.predictor(c)
             hidden_activations.append(end)
         return self.test_labels, hidden_activations
 
+    def blind_test(self, images):
+        #Raw images is a list with sublist of raw_images
+        self.preprosessing(images)
+        raw_results = self.do_testing(blind_test_images=images)
+        results = []
+        for i in range(len(raw_results)):
+            highest_value = int(np.where(raw_results[i] == max(raw_results[i]))[0][0])
+            results.append(highest_value)
+        #Returns a list with the classifications of the images
+        return results
+
+    def preprosessing(self, feature_sets):
+        #Scales images to have values between 0.0 and 1.0 instead of 0 and 255
+        for image in range(len(feature_sets)):
+            for value in range(len(feature_sets[image])):
+                feature_sets[image][value] = feature_sets[image][value]/float(255)
+
 
 nr_of_training_images = 60000
 nr_of_testing_images = 10000
 image_recog = ImageRecog(nr_of_training_images)
+image_recog.preprosessing(image_recog.images)
 image_recog.do_training(epochs=3)
 test_labels, result = image_recog.do_testing(nr_of_testing_images)
 
