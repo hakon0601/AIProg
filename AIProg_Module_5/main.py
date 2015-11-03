@@ -21,7 +21,7 @@ class ImageRecog():
     def build_ann(self,nb,nh):
         w1 = theano.shared(np.random.uniform(-.1,.1,size=(nb,nh)))
         w2 = theano.shared(np.random.uniform(-.1,.1,size=(nh,10)))
-        input = T.wvector('input')
+        input = T.dvector('input')
         target = T.wvector('target')
         b1 = theano.shared(np.random.uniform(-.1,.1,size=nh))
         b2 = theano.shared(np.random.uniform(-.1,.1,size=10))
@@ -34,15 +34,14 @@ class ImageRecog():
         self.predictor = theano.function([input],[x2])
         self.trainer = theano.function([input, target], error, updates=backprop_acts)
 
-    def do_training(self, epochs=1, test_interval=None):
+    def do_training(self, epochs=1, test_interval=None, errors=[]):
         #graph.start_interactive_mode()
-        errors = []
         #if test_interval: self.avg_vector_distances = []
         for i in range(epochs):
             print("epoch: ", i)
             error = 0
             for j in range(len(self.images)):
-                if j % 1000 == 0:
+                if j % 10000 == 0:
                     print("image nr: ", j)
                 tar = [0] * 10
                 tar[self.labels[j]] = 1
@@ -50,18 +49,13 @@ class ImageRecog():
 
                 error += self.trainer(self.images[j], tar)
             print(error)
-            print(error/len(self.images))
+            print("avg error pr image: " + str(error/len(self.images)))
             errors.append(error)
-        #    if test_interval: self.consider_interim_test(i,test_interval)
-        #graph.simple_plot(errors,xtitle="Epoch",ytitle="Error",title="")
-        #if test_interval:
-        #    graph.newfig()
-        #    graph.simple_plot(self.avg_vector_distances,xtitle='Epoch',
-        #                     ytitle='Avg Hidden-Node Vector Distance',title='')
+        return errors
 
     def do_testing(self,scatter=True, blind_test_images=None):
         if not blind_test_images:
-            self.test_images, self.test_labels = mnist_basics.gen_x_flat_cases(100, type="testing")
+            self.test_images, self.test_labels = gen_x_flat_cases(100, type="testing")
             self.preprosessing(self.test_images)
         else:
             self.test_images = blind_test_images
@@ -70,6 +64,7 @@ class ImageRecog():
         for c in self.test_images:
             end = self.predictor(c)
             hidden_activations.append(end)
+        self.check_result(hidden_activations)
         return self.test_labels, hidden_activations
 
     def blind_test(self, images):
@@ -89,25 +84,37 @@ class ImageRecog():
             for value in range(len(feature_sets[image])):
                 feature_sets[image][value] = feature_sets[image][value]/float(255)
 
+    def check_result(self, result):
+        count = 0
+        for i in range(len(self.test_labels)):
+            #print image_recog.labels[i]
+            #print result[i]
+            b = int(self.test_labels[i]) == np.argmax(result[i])# == max(result[i]))[0][0])
+            #print b
+            # print (test_labels[i])
+            # print(result[i])
+            # print(np.argmax(result[i]))
+            # print(b)
+            # print ("---")
+            if b:
+                count += 1
+        print("statistics:", (count/float(len(self.test_labels))) * 100)
+
 
 nr_of_training_images = 60000
 nr_of_testing_images = 10000
 image_recog = ImageRecog(nr_of_training_images)
 image_recog.preprosessing(image_recog.images)
-image_recog.do_training(epochs=3)
-test_labels, result = image_recog.do_testing(nr_of_testing_images)
 
-count = 0
-for i in range(len(test_labels)):
-    #print image_recog.labels[i]
-    #print result[i]
-    b = int(test_labels[i]) == np.argmax(result[i])# == max(result[i]))[0][0])
-    #print b
-    print (test_labels[i])
-    print(result[i])
-    print(np.argmax(result[i]))
-    print(b)
-    print ("---")
-    if b:
-        count += 1
-print("statistics:", (count/float(len(test_labels))) * 100)
+errors = []
+
+while True:
+    action = int(input("Press 1 to train, 2 to test: "))
+    if action == 1:
+        errors = image_recog.do_training(epochs=1, errors=errors)
+    elif action == 2:
+        test_labels, result = image_recog.do_testing(nr_of_testing_images)
+    else:
+        errors = image_recog.do_training(epochs=action, errors=errors)
+
+
