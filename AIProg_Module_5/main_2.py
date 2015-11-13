@@ -28,7 +28,7 @@ class ImageRecog():
         w2 = theano.shared(np.random.uniform(low=-.1, high=.1, size=(nh, 10)))
         input = T.fmatrix()
         target = T.fmatrix()
-        x1 = Tann.sigmoid(T.dot(input,w1))
+        x1 = T.tanh(T.dot(input,w1))  #Tann.sigmoid(T.dot(input,w1))
         x2 = Tann.sigmoid(T.dot(x1,w2))
         error = T.sum(pow((target - x2), 2))
         params = [w1, w2]
@@ -92,11 +92,6 @@ class ImageRecog():
             end = self.predictor(image_group)
             for res in end:
                 hidden_activations.append(res)
-        '''
-        for c in self.test_images:
-            end = self.predictor(c)
-            hidden_activations.append(end)
-        '''
         self.check_result(hidden_activations)
         return self.test_labels, hidden_activations
 
@@ -120,16 +115,7 @@ class ImageRecog():
     def check_result(self, result):
         count = 0
         for i in range(len(result)):
-            #print image_recog.labels[i]
-            #print result[i]
-            b = int(self.test_labels[i]) == np.argmax(result[i])# == max(result[i]))[0][0])
-            #print b
-            # print (test_labels[i])
-            # print(result[i])
-            # print(np.argmax(result[i]))
-            # print(b)
-            # print ("---")
-            if b:
+            if int(self.test_labels[i]) == np.argmax(result[i]):
                 count += 1
         print("statistics:", (count/float(len(self.test_labels))) * 100)
 
@@ -142,6 +128,8 @@ image_recog.preprosessing(image_recog.test_images)
 
 
 errors = []
+
+number_of_layers = int(input("Number of "))
 
 starttime = time()
 while True:
