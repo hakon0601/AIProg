@@ -95,7 +95,7 @@ class Gui(tk.Tk):
         if is_moved:
             self.game_board.generate_new_node()
             self.draw_board()
-            self.f = open('/Users/kariskjold/Documents/AIProg/AIProg_Module_5/2048trainingdata.txt', 'a')
+            self.f = open('/Users/hakon0601/Dropbox/Python/AIProg/AIProg_Module_5/2048trainingdata.txt', 'a')
             board = ""
             for i in range(3,-1,-1):
                 board += (str(self.game_board.board[i][0])) + " "
