@@ -9,18 +9,22 @@ class Gui(tk.Tk):
     def __init__(self, delay, diagonal=False, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         self.title("2048-solver")
-        self.cell_width = self.cell_height = 50
+        self.cell_width = self.cell_height = 100
         self.dim = (4, 4)
         self.delay=delay
         screen_width = self.dim[0]*self.cell_width+1
         screen_height = self.dim[1]*self.cell_height+1
         self.canvas = tk.Canvas(self, width=screen_width, height=screen_height, borderwidth=0, highlightthickness=0)
         self.canvas.pack(side="top", fill="both", expand="true")
-        #self.bind_keys()
+        self.bind_keys()
 
         self.color_dict = self.fill_color_dict()
         self.results = []
-        self.start_game()
+        #self.start_game()
+        self.game_board = Game2048(board=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
+        self.board = self.game_board.board
+        self.game_board.generate_new_node()
+        self.draw_board()
 
     def start_game(self):
         if len(self.results) < 5:
@@ -74,15 +78,27 @@ class Gui(tk.Tk):
             self.after(self.delay, lambda: self.run_algorithm())
 
     def bind_keys(self):
-        self.bind('<Up>', lambda event: self.move(self, self.game_board.move_up()))
-        self.bind('<Down>', lambda event: self.move(self, self.game_board.move_down()))
-        self.bind('<Right>', lambda event: self.move(self, self.game_board.move_right()))
-        self.bind('<Left>', lambda event: self.move(self, self.game_board.move_left()))
+        self.bind('<Up>', lambda event: self.move(self, self.game_board.move_up(), 0))
+        self.bind('<Right>', lambda event: self.move(self, self.game_board.move_right(), 1))
+        self.bind('<Down>', lambda event: self.move(self, self.game_board.move_down(), 2))
+        self.bind('<Left>', lambda event: self.move(self, self.game_board.move_left(), 3))
 
-    def move(self, event, is_moved):
+    def move(self, event, is_moved, direction):
         if is_moved:
             self.game_board.generate_new_node()
             self.draw_board()
+            self.f = open('/Users/kariskjold/Documents/AIProg/AIProg_Module_5/2048trainingdata.txt', 'a')
+            board = ""
+            for i in range(3,-1,-1):
+                board += (str(self.game_board.board[i][0])) + " "
+                board += (str(self.game_board.board[i][1])) + " "
+                board += (str(self.game_board.board[i][2])) + " "
+                board += (str(self.game_board.board[i][3])) + " "
+            board += " "
+            board += str(direction)
+            self.f.write(board)
+            self.f.write("\n")
+            self.f.close()
 
     def draw_board(self):
         self.canvas.delete("all")
