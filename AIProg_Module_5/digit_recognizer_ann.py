@@ -159,15 +159,20 @@ digit_recog.preprosessing(digit_recog.test_images)
 
 errors = []
 
-starttime = time()
+start_time = time()
 while True:
-    action = input("Press 1 to train, 2 to test, r to set learning rate: ")
-    if int(action) == 1:
-        errors = digit_recog.do_training(epochs=1, errors=errors)
-    elif int(action) == 2:
-        test_labels, result = digit_recog.do_testing()
+    action = input("Enter a integer x to train x epocs, t to test: ")
+    if action[0] == "t":
+        if len(action) == 1:
+            test_labels, result = digit_recog.do_testing()
+        elif action[1] == "l":
+            digit_recog.test_images, digit_recog.test_labels = gen_x_flat_cases(nr_of_training_images)
+            test_labels, result = digit_recog.do_testing()
+        elif action[1] == "a":
+            # TODO test the auxiliary data
+            pass
     else:
         errors = digit_recog.do_training(epochs=int(action), errors=errors)
-    print("Total time elapsed: " + str((time() - starttime)/60) + " min")
+    print("Total time elapsed: " + str((time() - start_time)/60) + " min")
 
 
