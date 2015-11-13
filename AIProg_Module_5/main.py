@@ -108,7 +108,7 @@ class ImageRecog():
         print("statistics:", (count/float(len(self.test_labels))) * 100)
 
 
-nr_of_training_images = 600
+nr_of_training_images = 60000
 nr_of_testing_images = 100
 image_recog = ImageRecog(nr_of_training_images)
 image_recog.preprosessing(image_recog.images)

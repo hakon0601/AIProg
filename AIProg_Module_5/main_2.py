@@ -12,32 +12,62 @@ class ImageRecog():
     # nb = # bits, nh = # hidden nodes (in the single hidden layer)
     # lr = learning rate
 
-    def __init__(self, nr_of_training_images, nb=28*28, nh=700, lr=0.001, bulk_size=1):
+    def __init__(self, nr_of_training_images, nr_of_hidden_layers, nr_of_nodes_in_layers, act_functions, lr, nb=28*28, nh=700, no=10, bulk_size=1):
         self.images, self.labels = gen_x_flat_cases(nr_of_training_images)
         self.test_images, self.test_labels = gen_x_flat_cases(nr_of_testing_images, type="testing")
         #self.images, self.labels = gen_flat_cases()
         self.lrate = lr
         self.bulk_size = bulk_size
-        self.build_ann(nb, nh)
+        self.build_ann(nb, nh, no, nr_of_hidden_layers, nr_of_nodes_in_layers, act_functions)
 
     def floatX(self, X):
         return np.asarray(X, dtype=theano.config.floatX)
 
-    def build_ann(self,nb,nh):
-        w1 = theano.shared(np.random.uniform(low=-.1, high=.1, size=(nb, nh)))
-        w2 = theano.shared(np.random.uniform(low=-.1, high=.1, size=(nh, 10)))
+    def softmax(self, X):
+        e_x = T.exp(X - X.max(axis=1).dimshuffle(0, 'x'))
+        return e_x / e_x.sum(axis=1).dimshuffle(0, 'x')
+
+    def build_ann(self,nb,nh,no, nr_of_hidden_layers, nr_of_nodes_in_layers, act_functions):
+        weights = []
+        a = theano.shared(np.random.uniform(low=-.1, high=.1, size=(nb, nr_of_nodes_in_layers[0])))
+        weights.append(a)
+        for i in range(1, nr_of_hidden_layers):
+            weights.append(theano.shared(np.random.uniform(low=-.1, high=.1, size=(nr_of_nodes_in_layers[i-1], nr_of_nodes_in_layers[i]))))
+        weights.append(theano.shared(np.random.uniform(low=-.1, high=.1, size=(nr_of_nodes_in_layers[-1], no))))
+
         input = T.fmatrix()
         target = T.fmatrix()
-        x1 = Tann.sigmoid(T.dot(input,w1))
-        x2 = Tann.sigmoid(T.dot(x1,w2))
-        error = T.sum(pow((target - x2), 2))
-        params = [w1, w2]
+
+        layers = []
+
+        # First layer
+        if act_functions[0] == 1:
+            layers.append(T.tanh(T.dot(input, weights[0])))
+        elif act_functions[0] == 2:
+            layers.append(Tann.sigmoid(T.dot(input, weights[0])))
+        elif act_functions[0] == 3: #Rectify
+            layers.append(T.maximum(0,T.dot(input, weights[0])))
+        elif act_functions[0] == 4:
+            layers.append(self.softmax(T.dot(input, weights[0])))
+        # Next layers
+        for j in range(nr_of_hidden_layers):
+            if act_functions[j+1] == 1:
+                layers.append(T.tanh(T.dot(layers[j], weights[j+1])))
+            elif act_functions[j+1] == 2:
+                layers.append(Tann.sigmoid(T.dot(layers[j], weights[j+1])))
+            elif act_functions[j+1] == 3:
+                layers.append(T.maximum(0,T.dot(layers[j], weights[j+1])))
+            elif act_functions[j+1] == 4:
+                layers.append(self.softmax(T.dot(layers[j], weights[j+1])))
+
+        error = T.sum(pow((target - layers[-1]), 2))
+        params = [weights[0], weights[1]]
         gradients = T.grad(error, params)
         backprops = self.backprop_acts(params, gradients)
 
         self.get_x1 = theano.function(inputs=[input, target], outputs=error, allow_input_downcast=True)
         self.trainer = theano.function(inputs=[input, target], outputs=error, updates=backprops, allow_input_downcast=True)
-        self.predictor = theano.function(inputs=[input], outputs=x2, allow_input_downcast=True)
+        self.predictor = theano.function(inputs=[input], outputs=layers[-1], allow_input_downcast=True)
 
     def backprop_acts (self, params, gradients):
         updates = []
@@ -136,10 +166,16 @@ class ImageRecog():
 
 nr_of_training_images = 60000
 nr_of_testing_images = 10000
-image_recog = ImageRecog(nr_of_training_images, bulk_size=100)
+
+number_of_hidden_layers = int(input("Number of hidden layers: "))
+nodes_in_each_layer = list(map(int, input("Hidden nodes in each layer: ").replace(" ", "").split(",")))
+print("TanH: 1, Sigmoid: 2, Rectify: 3, Softmax: 4")
+activation_functions = list(map(int, input("Select activation functions: ").replace(" ", "").split(",")))
+learning_rate = float(input("learning rate: "))
+
+image_recog = ImageRecog(nr_of_training_images, number_of_hidden_layers, nodes_in_each_layer, activation_functions, learning_rate, bulk_size=100)
 image_recog.preprosessing(image_recog.images)
 image_recog.preprosessing(image_recog.test_images)
-
 
 errors = []
 
