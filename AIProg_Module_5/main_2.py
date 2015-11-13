@@ -61,7 +61,7 @@ class ImageRecog():
                 layers.append(self.softmax(T.dot(layers[j], weights[j+1])))
 
         error = T.sum(pow((target - layers[-1]), 2))
-        params = [weights[0], weights[1]]
+        params = [w for w in weights]
         gradients = T.grad(error, params)
         backprops = self.backprop_acts(params, gradients)
 
@@ -162,7 +162,7 @@ class ImageRecog():
             if b:
                 count += 1
         print("statistics:", (count/float(len(self.test_labels))) * 100)
-
+        return float((count/float(len(self.test_labels))) * 100)
 
 nr_of_training_images = 60000
 nr_of_testing_images = 10000
@@ -189,7 +189,11 @@ while True:
     elif int(action) == 2:
         test_labels, result = image_recog.do_testing(nr_of_testing_images=nr_of_testing_images)
     else:
-        errors = image_recog.do_training(epochs=int(action), errors=errors)
+        results = []
+        for i in range(int(action)):
+            errors = image_recog.do_training(epochs=1, errors=errors)
+            test_labels, result = image_recog.do_testing(nr_of_testing_images=nr_of_testing_images)
+            results.append(float(image_recog.check_result(result)))
+    for i in range(len(results)):
+        print(results[i])
     print("Total time elapsed: " + str((time() - starttime)/60) + " min")
-
-
