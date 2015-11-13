@@ -136,7 +136,7 @@ class ImageRecog():
 
 nr_of_training_images = 60000
 nr_of_testing_images = 10000
-image_recog = ImageRecog(nr_of_training_images, bulk_size=50)
+image_recog = ImageRecog(nr_of_training_images, bulk_size=100)
 image_recog.preprosessing(image_recog.images)
 image_recog.preprosessing(image_recog.test_images)
 

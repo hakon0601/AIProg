@@ -4,6 +4,8 @@ from game2048 import Game2048
 from expectimax import Expectimax
 from state import State
 from time import time
+from collections import defaultdict
+import json
 
 class Gui(tk.Tk):
     def __init__(self, delay, diagonal=False, *args, **kwargs):
@@ -12,6 +14,7 @@ class Gui(tk.Tk):
         self.cell_width = self.cell_height = 50
         self.dim = (4, 4)
         self.delay=delay
+        self.neural_network_cases = json.load(open("nn_cases.txt"))
         screen_width = self.dim[0]*self.cell_width+1
         screen_height = self.dim[1]*self.cell_height+1
         self.canvas = tk.Canvas(self, width=screen_width, height=screen_height, borderwidth=0, highlightthickness=0)
@@ -23,7 +26,7 @@ class Gui(tk.Tk):
         self.start_game()
 
     def start_game(self):
-        if len(self.results) < 5:
+        if len(self.results) < 500:
             self.game_board = Game2048(board=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
             self.board = self.game_board.board
             self.game_board.generate_new_node()
@@ -39,20 +42,25 @@ class Gui(tk.Tk):
 
     def run_algorithm(self):
         if self.game_board.open_cells_count() < 4:
-            self.depth = 5
+            self.depth = 3
         else:
-            self.depth = 5
+            self.depth = 3
         continuing = True
         if self.game_board.is_game_over():
             largest_tile = self.game_board.get_largest_tile()
             print "largest tile", largest_tile
-            print "time elapsed", time() - self.time
+            print "time elapsed: " + str(round(time() - self.time, 1)) + " min"
             self.results.append(largest_tile)
             continuing = False
+            print "nr of cases: ", len(self.neural_network_cases)
+            json.dump(self.neural_network_cases, open("nn_cases.txt",'w'))
             return self.start_game()
         current_node = State(self.game_board, self.depth)
         self.move_count += 1
         chosen_move = self.expectimax.run_expectimax(current_node, self.depth, -float("inf"), float("inf"), None)
+        expectimax_result = self.expectimax.result
+        flat_board = current_node.board.board[0] + current_node.board.board[1] + current_node.board.board[2] + current_node.board.board[3]
+        self.neural_network_cases[str(flat_board)] = expectimax_result
         #TODO what is this? Continuing
         if chosen_move == None:
             Continuing = False
@@ -119,5 +127,5 @@ class Gui(tk.Tk):
         return color_dict
 
 if __name__ == "__main__":
-    app = Gui(delay=50)
+    app = Gui(delay=1)
     app.mainloop()

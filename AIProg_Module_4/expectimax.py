@@ -23,7 +23,8 @@ class Expectimax():
                     up = max(a, self.run_expectimax(child, depth-1, a, b, True))
                 elif child.move == "down":
                     down = max(a, self.run_expectimax(child, depth-1, a, b, True))
-            result =  max(left,right,up,down)
+            self.result = [left, right, up, down]
+            result =  max(left, right, up, down)
             #Returns which move to make
             if result==left:
                 return "left"
