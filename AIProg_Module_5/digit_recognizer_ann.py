@@ -141,7 +141,7 @@ class DigitRecognizer():
             if int(self.test_labels[i]) == np.argmax(result[i]):
                 count += 1
         print("statistics:", (count/float(len(self.test_labels))) * 100)
-
+        return float((count/float(len(self.test_labels))) * 100)
 
 nr_of_training_images = 60000
 nr_of_testing_images = 10000
@@ -172,7 +172,23 @@ while True:
             # TODO test the auxiliary data
             pass
     else:
-        errors = digit_recog.do_training(epochs=int(action), errors=errors)
-    print("Total time elapsed: " + str((time() - start_time)/60) + " min")
+        #errors = digit_recog.do_training(epochs=int(action), errors=errors)
+        results = []
+        for i in range(int(action)):
+            errors = digit_recog.do_training(epochs=1, errors=errors)
+            test_labels, result = digit_recog.do_testing(nr_of_testing_images=nr_of_testing_images)
+            results.append(float(digit_recog.check_result(result)))
+
+        for i in range(len(results)):
+            print(results[i])
+    print("Total time elapsed: " + str((time() - starttime)/60) + " min")
 
 
+=======
+        results = []
+        for i in range(int(action)):
+            errors = image_recog.do_training(epochs=1, errors=errors)
+            test_labels, result = image_recog.do_testing(nr_of_testing_images=nr_of_testing_images)
+            results.append(float(image_recog.check_result(result)))
+
+>>>>>>> 338c0337c4f418bf20120b3637c174e6f21442f4
