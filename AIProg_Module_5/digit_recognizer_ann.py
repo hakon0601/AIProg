@@ -9,7 +9,7 @@ import theano.tensor.nnet as Tann
 
 class DigitRecognizer():
 
-    def __init__(self, nr_of_training_images, nr_of_hidden_layers, nr_of_nodes_in_layers, act_functions, lr, nb=28*28, no=10, bulk_size=1):
+    def __init__(self, nr_of_training_images, nr_of_hidden_layers, nr_of_nodes_in_layers, act_functions, lr, number_of_input_nodes=28 * 28, no=10, bulk_size=1):
         self.images, self.labels = gen_x_flat_cases(nr_of_training_images)
         self.test_images, self.test_labels = gen_x_flat_cases(nr_of_testing_images, type="testing")
         #self.images, self.labels = gen_flat_cases()
@@ -17,15 +17,11 @@ class DigitRecognizer():
 
         self.lrate = lr
         self.bulk_size = bulk_size
-        self.build_ann(nb, no, nr_of_hidden_layers, nr_of_nodes_in_layers, act_functions)
+        self.build_ann(number_of_input_nodes, no, nr_of_hidden_layers, nr_of_nodes_in_layers, act_functions)
 
-    def softmax(self, X):
-        e_x = T.exp(X - X.max(axis=1).dimshuffle(0, 'x'))
-        return e_x / e_x.sum(axis=1).dimshuffle(0, 'x')
-
-    def build_ann(self, nb, no, nr_of_hidden_layers, nr_of_nodes_in_layers, act_functions):
+    def build_ann(self, number_of_input_nodes, no, nr_of_hidden_layers, nr_of_nodes_in_layers, act_functions):
         weights = []
-        a = theano.shared(np.random.uniform(low=-.1, high=.1, size=(nb, nr_of_nodes_in_layers[0])))
+        a = theano.shared(np.random.uniform(low=-.1, high=.1, size=(number_of_input_nodes, nr_of_nodes_in_layers[0])))
         weights.append(a)
         for i in range(1, nr_of_hidden_layers):
             weights.append(theano.shared(np.random.uniform(low=-.1, high=.1, size=(nr_of_nodes_in_layers[i-1], nr_of_nodes_in_layers[i]))))
@@ -47,7 +43,7 @@ class DigitRecognizer():
             layers.append(T.maximum(0,T.dot(input, weights[0])))
         elif act_functions[0] == 4:
             # Softmax
-            layers.append(self.softmax(T.dot(input, weights[0])))
+            layers.append(T.nnet.softmax((T.dot(input, weights[0]))))
         # Next layers
         for j in range(nr_of_hidden_layers):
             if act_functions[j+1] == 1:
@@ -57,7 +53,7 @@ class DigitRecognizer():
             elif act_functions[j+1] == 3:
                 layers.append(T.maximum(0,T.dot(layers[j], weights[j+1])))
             elif act_functions[j+1] == 4:
-                layers.append(self.softmax(T.dot(layers[j], weights[j+1])))
+                layers.append(T.nnet.softmax((T.dot(layers[j], weights[j+1]))))
 
         error = T.sum(pow((target - layers[-1]), 2)) # Sum of squared errors
         params = [w for w in weights]
@@ -176,19 +172,9 @@ while True:
         results = []
         for i in range(int(action)):
             errors = digit_recog.do_training(epochs=1, errors=errors)
-            test_labels, result = digit_recog.do_testing(nr_of_testing_images=nr_of_testing_images)
+            test_labels, result = digit_recog.do_testing()
             results.append(float(digit_recog.check_result(result)))
 
         for i in range(len(results)):
-            print(results[i])
-    print("Total time elapsed: " + str((time() - starttime)/60) + " min")
-
-
-=======
-        results = []
-        for i in range(int(action)):
-            errors = image_recog.do_training(epochs=1, errors=errors)
-            test_labels, result = image_recog.do_testing(nr_of_testing_images=nr_of_testing_images)
-            results.append(float(image_recog.check_result(result)))
-
->>>>>>> 338c0337c4f418bf20120b3637c174e6f21442f4
+            print(str(round(100-results[i],2)).replace(".", ","))
+    print("Total time elapsed: " + str((time() - start_time)/60) + " min")
