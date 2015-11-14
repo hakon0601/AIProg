@@ -42,7 +42,7 @@ class Gui(tk.Tk):
         nr_of_hidden_layers = 1
         nr_of_nodes_in_layers = [10]
         act_functions = [3,4]
-        lr = 0.0015
+        lr = 0.1
         number_of_input_nodes = 16
         number_of_output_nodes = 4
         bulk_size = 1

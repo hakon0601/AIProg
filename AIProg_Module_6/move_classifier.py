@@ -112,8 +112,14 @@ class MoveClassifier():
                 if labels[i][j] == None:
                     labels[i][j] = 0
             boards[i] = json.loads(boards[i])
+            sorted_board = sorted(boards[i], reverse=True)
             for j in range(len(boards[i])):
-                boards[i][j] = boards[i][j]/float(1024)
+                if boards[i][j] == 0:
+                    continue
+                rank = sorted_board.index(boards[i][j])
+                boards[i][j] = (15 - rank) / 15
+                # boards[i][j] = boards[i][j]/float(1024)
+
             largest_index = labels[i].index(max(labels[i]))
             labels[i] = [0, 0, 0, 0]
             labels[i][largest_index] = 1
@@ -121,6 +127,8 @@ class MoveClassifier():
     def check_result(self, result):
         count = 0
         for i in range(len(result)):
+            a = result[i]
+            b = self.test_labels[i]
             if np.argmax(self.test_labels[i]) == np.argmax(result[i]):
                 count += 1
         print("statistics:", (count/float(len(self.test_labels))) * 100)
