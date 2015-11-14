@@ -14,20 +14,23 @@ class Gui(tk.Tk):
         self.cell_width = self.cell_height = 100
         self.dim = (4, 4)
         self.delay=delay
-        self.neural_network_cases = json.load(open("nn_cases.txt"))
+        #self.neural_network_cases = json.load(open("nn_cases.txt"))
+        self.neural_network_cases = {}
         screen_width = self.dim[0]*self.cell_width+1
         screen_height = self.dim[1]*self.cell_height+1
         self.canvas = tk.Canvas(self, width=screen_width, height=screen_height, borderwidth=0, highlightthickness=0)
         self.canvas.pack(side="top", fill="both", expand="true")
-        self.bind_keys()
+        self.old_nr_of_cases = 0
+
+        #self.bind_keys()
 
         self.color_dict = self.fill_color_dict()
         self.results = []
-        #self.start_game()
-        self.game_board = Game2048(board=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
-        self.board = self.game_board.board
-        self.game_board.generate_new_node()
-        self.draw_board()
+        self.start_game()
+        #self.game_board = Game2048(board=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
+        #self.board = self.game_board.board
+        #self.game_board.generate_new_node()
+        #self.draw_board()
 
     def start_game(self):
         if len(self.results) < 500:
@@ -53,17 +56,20 @@ class Gui(tk.Tk):
         if self.game_board.is_game_over():
             largest_tile = self.game_board.get_largest_tile()
             print "largest tile", largest_tile
-            print "time elapsed: " + str(round(time() - self.time, 1)) + " min"
+            print "time elapsed: " + str(round((time() - self.time)/60, 1)) + " min"
             self.results.append(largest_tile)
             continuing = False
             print "nr of cases: ", len(self.neural_network_cases)
+            print "nr of new cases: ", int(len(self.neural_network_cases) - self.old_nr_of_cases)
+            self.old_nr_of_cases = len(self.neural_network_cases)
+            print "move count", self.move_count
             json.dump(self.neural_network_cases, open("nn_cases.txt",'w'))
             return self.start_game()
         current_node = State(self.game_board, self.depth)
         self.move_count += 1
         chosen_move = self.expectimax.run_expectimax(current_node, self.depth, -float("inf"), float("inf"), None)
         expectimax_result = self.expectimax.result
-        flat_board = current_node.board.board[0] + current_node.board.board[1] + current_node.board.board[2] + current_node.board.board[3]
+        flat_board = current_node.board.board[3] + current_node.board.board[2] + current_node.board.board[1] + current_node.board.board[0]
         self.neural_network_cases[str(flat_board)] = expectimax_result
         #TODO what is this? Continuing
         if chosen_move == None:

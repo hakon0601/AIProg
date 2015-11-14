@@ -2,7 +2,7 @@ import tkinter as tk
 from game2048 import Game2048
 from state import State
 from time import time
-from neural_net import MoveClassifier
+from move_classifier import MoveClassifier
 import numpy as np
 
 class Gui(tk.Tk):
@@ -17,18 +17,12 @@ class Gui(tk.Tk):
         self.canvas = tk.Canvas(self, width=screen_width, height=screen_height, borderwidth=0, highlightthickness=0)
         self.canvas.pack(side="top", fill="both", expand="true")
         #self.bind_keys()
-        nr_of_training_cases = 600000
-        nr_of_test_cases = 10000
-        self.move_classifier = MoveClassifier(nr_of_training_cases, nr_of_test_cases, bulk_size=100)
-        self.move_classifier.preprosessing(boards=self.move_classifier.boards, labels=self.move_classifier.labels)
-        self.move_classifier.preprosessing(boards=self.move_classifier.test_boards, labels=self.move_classifier.test_labels)
-
+        self.user_control()
         self.color_dict = self.fill_color_dict()
         self.results = []
         self.start_game()
 
     def start_game(self):
-        self.user_control()
         if len(self.results) < 1:
             self.game_board = Game2048(board=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
             self.board = self.game_board.board
@@ -43,20 +37,42 @@ class Gui(tk.Tk):
 
 
     def user_control(self):
+        nr_of_training_cases = 100
+        nr_of_test_cases = 100
+        nr_of_hidden_layers = 1
+        nr_of_nodes_in_layers = [10]
+        act_functions = [3,4]
+        lr = 0.0015
+        number_of_input_nodes = 16
+        number_of_output_nodes = 4
+        bulk_size = 1
+        self.move_classifier = MoveClassifier(nr_of_training_cases=nr_of_training_cases, nr_of_test_cases=nr_of_test_cases,
+                                              nr_of_hidden_layers=nr_of_hidden_layers, nr_of_nodes_in_layers=nr_of_nodes_in_layers,
+                                              act_functions=act_functions, lr=lr, number_of_input_nodes=number_of_input_nodes,
+                                              number_of_output_nodes=number_of_output_nodes, bulk_size=bulk_size)
+        self.move_classifier.preprosessing(boards=self.move_classifier.boards, labels=self.move_classifier.labels)
+        self.move_classifier.preprosessing(boards=self.move_classifier.test_boards, labels=self.move_classifier.test_labels)
+
         errors = []
 
-        starttime = time()
+        start_time = time()
         while True:
-            action = input("Press 1 to train, 2 to test, r to set learning rate: ")
-            if action == 's':
-                return
-            elif int(action) == 1:
-                errors = self.move_classifier.do_training(epochs=1, errors=errors)
-            elif int(action) == 2:
+            action = input("Enter a integer x to train x epocs, t to test: ")
+            if action[0] == "t":
                 test_labels, result = self.move_classifier.do_testing()
+            elif action[0] == "s":
+                return
             else:
-                errors = self.move_classifier.do_training(epochs=int(action), errors=errors)
-            print("Total time elapsed: " + str(round((time() - starttime)/60, 1)) + " min")
+                #errors = digit_recog.do_training(epochs=int(action), errors=errors)
+                results = []
+                for i in range(int(action)):
+                    errors = self.move_classifier.do_training(epochs=1, errors=errors)
+                    test_labels, result = self.move_classifier.do_testing()
+                    results.append(float(self.move_classifier.check_result(result)))
+
+                for i in range(len(results)):
+                    print(results[i])
+            print("Total time elapsed: " + str((time() - start_time)/60) + " min")
 
 
     def run_algorithm(self):
@@ -75,7 +91,7 @@ class Gui(tk.Tk):
         current_node = State(self.game_board, self.depth)
         self.move_count += 1
         #chosen_move = self.expectimax.run_expectimax(current_node, self.depth, -float("inf"), float("inf"), None)
-        flat_board = current_node.board.board[0] + current_node.board.board[1] + current_node.board.board[2] + current_node.board.board[3]
+        flat_board = current_node.board.board[3] + current_node.board.board[2] + current_node.board.board[1] + current_node.board.board[0]
         result = self.move_classifier.predictor([flat_board])
         chosen_move = self.get_best_legal_move(result)
         #TODO what is this? Continuing
