@@ -20,8 +20,8 @@ class MoveClassifier():
 
     def build_ann(self, number_of_input_nodes, no, nr_of_hidden_layers, nr_of_nodes_in_layers, act_functions):
         weights = []
-        a = theano.shared(np.random.uniform(low=-.1, high=.1, size=(number_of_input_nodes, nr_of_nodes_in_layers[0])))
-        weights.append(a)
+        first_weights = theano.shared(np.random.uniform(low=-.1, high=.1, size=(number_of_input_nodes, nr_of_nodes_in_layers[0])))
+        weights.append(first_weights)
         for i in range(1, nr_of_hidden_layers):
             weights.append(theano.shared(np.random.uniform(low=-.1, high=.1, size=(nr_of_nodes_in_layers[i-1], nr_of_nodes_in_layers[i]))))
         weights.append(theano.shared(np.random.uniform(low=-.1, high=.1, size=(nr_of_nodes_in_layers[-1], no))))
@@ -31,28 +31,10 @@ class MoveClassifier():
 
         layers = []
         # First hidden layer
-        if act_functions[0] == 1:
-            # TanH
-            layers.append(T.tanh(T.dot(input, weights[0])))
-        elif act_functions[0] == 2:
-            # Sigmoid
-            layers.append(Tann.sigmoid(T.dot(input, weights[0])))
-        elif act_functions[0] == 3:
-            # Rectify
-            layers.append(T.maximum(0,T.dot(input, weights[0])))
-        elif act_functions[0] == 4:
-            # Softmax
-            layers.append(T.nnet.softmax((T.dot(input, weights[0]))))
+        self.add_layer_activation_function(act_functions[0], layers, input, weights[0])
         # Next layers
         for j in range(nr_of_hidden_layers):
-            if act_functions[j+1] == 1:
-                layers.append(T.tanh(T.dot(layers[j], weights[j+1])))
-            elif act_functions[j+1] == 2:
-                layers.append(Tann.sigmoid(T.dot(layers[j], weights[j+1])))
-            elif act_functions[j+1] == 3:
-                layers.append(T.maximum(0,T.dot(layers[j], weights[j+1])))
-            elif act_functions[j+1] == 4:
-                layers.append(T.nnet.softmax((T.dot(layers[j], weights[j+1]))))
+            self.add_layer_activation_function(act_functions[j+1], layers, layers[j], weights[j+1])
 
         error = T.sum(pow((target - layers[-1]), 2)) # Sum of squared errors
         params = [w for w in weights]
@@ -62,6 +44,20 @@ class MoveClassifier():
         #self.get_x1 = theano.function(inputs=[input, target], outputs=error, allow_input_downcast=True)
         self.trainer = theano.function(inputs=[input, target], outputs=error, updates=backprops, allow_input_downcast=True)
         self.predictor = theano.function(inputs=[input], outputs=layers[-1], allow_input_downcast=True)
+
+    def add_layer_activation_function(self, act_func, layers, layer, weight):
+        product = T.dot(layer, weight)
+        if act_func == 1:
+            # TanH
+            layers.append(T.tanh(product))
+        elif act_func == 2:
+            # Sigmoid
+            layers.append(Tann.sigmoid(product))
+        elif act_func == 3:
+            # Rectify
+            layers.append(T.maximum(0, product))
+        elif act_func == 4:
+            layers.append(T.nnet.softmax(product))
 
     def backprop_acts (self, params, gradients):
         updates = []
@@ -82,8 +78,8 @@ class MoveClassifier():
                 i += self.bulk_size
                 j += self.bulk_size
                 # Provide some feedback while processing boards
-                if j % (self.bulk_size * 100) == 0:
-                    print("board nr: ", j)
+                #if j % (self.bulk_size * 100) == 0:
+                #    print("board nr: ", j)
                 error += self.trainer(board_bulk, label_bulk)
             print("avg error pr board: " + str(error/j))
             errors.append(error)

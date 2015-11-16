@@ -37,12 +37,12 @@ class Gui(tk.Tk):
 
 
     def user_control(self):
-        nr_of_training_cases = 100
+        nr_of_training_cases = 1000
         nr_of_test_cases = 100
         nr_of_hidden_layers = 1
-        nr_of_nodes_in_layers = [10]
+        nr_of_nodes_in_layers = [80]
         act_functions = [3,4]
-        lr = 0.1
+        lr = 0.2
         number_of_input_nodes = 16
         number_of_output_nodes = 4
         bulk_size = 1
@@ -94,7 +94,6 @@ class Gui(tk.Tk):
         flat_board = current_node.board.board[3] + current_node.board.board[2] + current_node.board.board[1] + current_node.board.board[0]
         result = self.move_classifier.predictor([flat_board])
         chosen_move = self.get_best_legal_move(result)
-        #TODO what is this? Continuing
         if chosen_move == 0:
             self.game_board.move_left()
         elif chosen_move == 1:
@@ -112,9 +111,10 @@ class Gui(tk.Tk):
 
     def get_best_legal_move(self, result):
         chosen_move = None
+
         while chosen_move == None or not self.game_board.is_move_legal(chosen_move):
             if chosen_move != None:
-                result[0][chosen_move] = 0
+                result[0][chosen_move] = -1
             chosen_move = np.argmax(result[0])
         return chosen_move
 
@@ -164,5 +164,5 @@ class Gui(tk.Tk):
         return color_dict
 
 if __name__ == "__main__":
-    app = Gui(delay=50)
+    app = Gui(delay=200)
     app.mainloop()
