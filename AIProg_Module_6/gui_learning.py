@@ -3,7 +3,10 @@ from game2048 import Game2048
 from state import State
 from time import time
 from move_classifier import MoveClassifier
+from expectimax import Expectimax
 import numpy as np
+import json
+
 
 class Gui(tk.Tk):
     def __init__(self, delay, diagonal=False, *args, **kwargs):
@@ -18,18 +21,21 @@ class Gui(tk.Tk):
         self.canvas.pack(side="top", fill="both", expand="true")
         #self.bind_keys()
         self.color_dict = self.fill_color_dict()
+        self.neural_network_cases = json.load(open("nn_cases_by_nn.txt"))
         self.results = []
+        self.user_control()
         self.start_game()
 
     def start_game(self):
         #if len(self.results) < 1:
-        self.user_control()
+        #self.user_control()
         if True:
             self.game_board = Game2048(board=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
             self.board = self.game_board.board
             self.game_board.generate_new_node()
-            self.depth = 4
+            self.depth = 3
             self.move_count = 0
+            self.expectimax = Expectimax()
             self.draw_board()
             self.time = time()
             self.run_algorithm()
@@ -38,15 +44,15 @@ class Gui(tk.Tk):
 
 
     def user_control(self):
-        nr_of_training_cases = 1000
-        nr_of_test_cases = 1000
+        nr_of_training_cases = 200
+        nr_of_test_cases = 100
         nr_of_hidden_layers = 1
         nr_of_nodes_in_layers = [80]
         act_functions = [3,4]
-        lr = 0.1
+        lr = 0.01
         number_of_input_nodes = 16
         number_of_output_nodes = 4
-        bulk_size = 1
+        bulk_size = 10
         self.move_classifier = MoveClassifier(nr_of_training_cases=nr_of_training_cases, nr_of_test_cases=nr_of_test_cases,
                                               nr_of_hidden_layers=nr_of_hidden_layers, nr_of_nodes_in_layers=nr_of_nodes_in_layers,
                                               act_functions=act_functions, lr=lr, number_of_input_nodes=number_of_input_nodes,
@@ -60,7 +66,8 @@ class Gui(tk.Tk):
         while True:
             action = input("Enter a integer x to train x epocs, t to test: ")
             if action[0] == "t":
-                test_labels, result = self.move_classifier.do_testing()
+                test_labels, result = self.move_classifier.do_testing(self.move_classifier.test_boards, self.move_classifier.test_labels)
+                training_labels, training_result = self.move_classifier.do_testing(self.move_classifier.boards, self.move_classifier.labels)
             elif action[0] == "s":
                 return
             else:
@@ -83,12 +90,16 @@ class Gui(tk.Tk):
             largest_tile = self.game_board.get_largest_tile()
             print("largest tile", largest_tile)
             self.results.append(largest_tile)
+            print("size of training data", len(self.neural_network_cases))
+            json.dump(self.neural_network_cases, open("nn_cases_by_nn.txt", 'w'))
             continuing = False
             return self.start_game()
         current_node = State(self.game_board, self.depth)
         self.move_count += 1
-        #chosen_move = self.expectimax.run_expectimax(current_node, self.depth, -float("inf"), float("inf"), None)
+        chosen_move = self.expectimax.run_expectimax(current_node, self.depth, -float("inf"), float("inf"), None)
+        expectimax_result = self.expectimax.result
         flat_board = current_node.board.board[3] + current_node.board.board[2] + current_node.board.board[1] + current_node.board.board[0]
+        self.neural_network_cases[str(flat_board)] = expectimax_result
         result = self.move_classifier.predictor([flat_board])
         chosen_move = self.get_best_legal_move(result)
         if chosen_move == 0:
@@ -161,5 +172,5 @@ class Gui(tk.Tk):
         return color_dict
 
 if __name__ == "__main__":
-    app = Gui(delay=200)
+    app = Gui(delay=2)
     app.mainloop()

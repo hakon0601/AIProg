@@ -74,7 +74,7 @@ class DigitRecognizer():
             error = 0
             i = 0
             j = self.bulk_size
-            while j < len(self.images):
+            while j <= len(self.images):
                 image_bulk = self.images[i:j]
                 # Creating a result bulk with only zeros
                 result_bulk = [[0 for i in range(10)] for i in range(self.bulk_size)]
@@ -91,35 +91,25 @@ class DigitRecognizer():
             errors.append(error)
         return errors
 
-    def do_testing(self, blind_test_images=None):
-        if blind_test_images:
-            self.test_images = blind_test_images
-            self.test_labels = None
-
-        hidden_activations = []
+    def do_testing(self, images):
+        output_activations = []
         i = 0
         j = self.bulk_size
-        while j < len(self.test_images):
-            image_group = self.test_images[i:j]
+        while j <= len(images):
+            image_group = images[i:j]
             i += self.bulk_size
             j += self.bulk_size
             predictions = self.predictor(image_group)
             # Transform back from bulk to single result
             for res in predictions:
-                hidden_activations.append(res)
-        if blind_test_images:
-            return hidden_activations
-        self.check_result(hidden_activations)
-        return self.test_labels, hidden_activations
+                output_activations.append(res)
+        return output_activations
 
-    def blind_test(self, images):
-        self.preprosessing(images)
-        raw_results = self.do_testing(blind_test_images=images)
+    def blind_test(self, output_activations):
         results = []
-        for i in range(len(raw_results)):
-            highest_value = np.argmax(raw_results[i])
-            results.append(highest_value)
-        #Returns a list with the classifications of the images
+        for i in range(len(output_activations)):
+            answer = np.argmax(output_activations[i])
+            results.append(answer)
         return results
 
     def preprosessing(self, feature_sets):
@@ -128,13 +118,17 @@ class DigitRecognizer():
             for value in range(len(feature_sets[image])):
                 feature_sets[image][value] = feature_sets[image][value]/float(255)
 
-    def check_result(self, result):
+    # Checking the results against the labels and return a percentage
+    def check_result(self, output_activations, labels):
+        results = []
         count = 0
-        for i in range(len(result)):
-            if int(self.test_labels[i]) == np.argmax(result[i]):
-                count += 1
-        print("statistics:", (count/float(len(self.test_labels))) * 100)
-        return float((count/float(len(self.test_labels))) * 100)
+        for i in range(len(output_activations)):
+            answer = np.argmax(output_activations[i])
+            if labels:
+                if int(labels[i]) == answer:
+                    count += 1
+            results.append(answer)
+        return float((count/float(len(labels))) * 100)
 
 nr_of_training_images = 60000
 nr_of_testing_images = 10000
@@ -150,6 +144,11 @@ digit_recog = DigitRecognizer(nr_of_training_images, number_of_hidden_layers, no
 digit_recog.preprosessing(digit_recog.images)
 digit_recog.preprosessing(digit_recog.test_images)
 
+# TODO
+blind_test_images = None
+#digit_recog.preprosessing(blind_test_images)
+
+
 errors = []
 
 start_time = time()
@@ -157,21 +156,19 @@ while True:
     action = input("Enter a integer x to train x epocs, t to test: ")
     if action[0] == "t":
         if len(action) == 1:
-            test_labels, result = digit_recog.do_testing()
+            output_activations = digit_recog.do_testing(images=digit_recog.test_images)
+            print("Statistics: ", digit_recog.check_result(output_activations, labels=digit_recog.test_labels), "%")
+        # Used to test on the large training set of images
         elif action[1] == "l":
-            digit_recog.test_images, digit_recog.test_labels = gen_x_flat_cases(nr_of_training_images)
-            test_labels, result = digit_recog.do_testing()
+            output_activations = digit_recog.do_testing(images=digit_recog.images)
+            print("Statistics: ", digit_recog.check_result(output_activations, labels=digit_recog.labels), "%")
         elif action[1] == "a":
-            # TODO test the auxiliary data
+            # TODO test the auxiliary data (blind test)
+            output_activations = digit_recog.do_testing(images=blind_test_images)
+            print("Result from blind test", digit_recog.blind_test(output_activations))
             pass
     else:
-        #errors = digit_recog.do_training(epochs=int(action), errors=errors)
-        results = []
-        for i in range(int(action)):
-            errors = digit_recog.do_training(epochs=1, errors=errors)
-            test_labels, result = digit_recog.do_testing()
-            results.append(float(digit_recog.check_result(result)))
-
-        for i in range(len(results)):
-            print(str(round(100-results[i],2)).replace(".", ","))
+        errors = digit_recog.do_training(epochs=int(action), errors=errors)
+        output_activations = digit_recog.do_testing(images=digit_recog.test_images)
+        print("Statistics: ", digit_recog.check_result(output_activations, labels=digit_recog.test_labels), "%")
     print("Total time elapsed: " + str((time() - start_time)/60) + " min")
