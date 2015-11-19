@@ -103,6 +103,7 @@ class MoveClassifier():
 
     def preprosessing(self, boards, labels):
         #Scales tiles to have values between 0.0 and 1.0 instead of 0 and 255
+        # Kan bruke potens verdien til alle of bare dele på det overste
         for i in range(len(labels)):
             for j in range(len(labels[i])):
                 if labels[i][j] == None:
