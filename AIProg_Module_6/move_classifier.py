@@ -6,6 +6,7 @@ import theano
 import numpy as np
 import theano.tensor as T
 import theano.tensor.nnet as Tann
+import copy
 
 
 class MoveClassifier():
@@ -42,7 +43,7 @@ class MoveClassifier():
         backprops = self.backprop_acts(params, gradients)
 
         #self.get_x1 = theano.function(inputs=[input, target], outputs=error, allow_input_downcast=True)
-        self.trainer = theano.function(inputs=[input, target], outputs=error, updates=backprops, allow_input_downcast=True)
+        self.trainer = theano.function(inputs=[input, target], outputs=[error, layers[-1]], updates=backprops, allow_input_downcast=True)
         self.predictor = theano.function(inputs=[input], outputs=layers[-1], allow_input_downcast=True)
 
     def add_layer_activation_function(self, act_func, layers, layer, weight):
@@ -72,7 +73,7 @@ class MoveClassifier():
             error = 0
             i = 0
             j = self.bulk_size
-            while j < len(self.boards):
+            while j <= len(self.boards):
                 board_bulk = self.boards[i:j]
                 label_bulk = self.labels[i:j]
                 i += self.bulk_size
@@ -80,52 +81,80 @@ class MoveClassifier():
                 # Provide some feedback while processing boards
                 #if j % (self.bulk_size * 100) == 0:
                 #    print("board nr: ", j)
-                error += self.trainer(board_bulk, label_bulk)
-            print("avg error pr board: " + str(error/j))
+                err, act_out = self.trainer(board_bulk, label_bulk)
+                error += err
+
+            print("avg error pr board: " + str(error/len(self.boards)))
             errors.append(error)
         return errors
 
-    def do_testing(self):
+    def do_testing(self, boards, labels):
         hidden_activations = []
         i = 0
         j = self.bulk_size
-        while j < len(self.test_boards):
-            image_group = self.test_boards[i:j]
+        while j <= len(boards):
+            image_group = boards[i:j]
             i += self.bulk_size
             j += self.bulk_size
             predictions = self.predictor(image_group)
             # Transform back from bulk to single result
             for res in predictions:
                 hidden_activations.append(res)
-        self.check_result(hidden_activations)
+        self.check_result(hidden_activations, labels)
+        #print("board: ", self.boards)
+        #print("test labels: ", self.test_labels)
         return self.test_labels, hidden_activations
 
 
     def preprosessing(self, boards, labels):
-        #Scales tiles to have values between 0.0 and 1.0 instead of 0 and 255
-        for i in range(len(labels)):
-            for j in range(len(labels[i])):
-                if labels[i][j] == None:
-                    labels[i][j] = 0
-            boards[i] = json.loads(boards[i])
-            sorted_board = sorted(boards[i], reverse=True)
+        for i in range(len(boards)):
+            largest = float(max(boards[i]))
             for j in range(len(boards[i])):
-                if boards[i][j] == 0:
-                    continue
-                rank = sorted_board.index(boards[i][j])
-                boards[i][j] = (15 - rank) / 15
-                # boards[i][j] = boards[i][j]/float(1024)
+                boards[i][j] = boards[i][j] / largest
 
+            # Create label array
             largest_index = labels[i].index(max(labels[i]))
             labels[i] = [0, 0, 0, 0]
             labels[i][largest_index] = 1
 
-    def check_result(self, result):
+    def neigbour_merge(self, board, k):
+        neigbour_count = 0
+        neigbours_that_can_merge = 0
+        tile = board[k]
+        if not (k+1)%4 == 0:
+            # tile right
+            neigbour_count += 1
+            if tile==board[k+1]:
+                neigbours_that_can_merge+=1
+        if not k%4 == 0:
+            # tile left
+            neigbour_count += 1
+            if tile==board[k-1]:
+                neigbours_that_can_merge+=1
+        if k>4:
+            # tile above
+            neigbour_count += 1
+            if tile==board[k-4]:
+                neigbours_that_can_merge+=1
+        if k<12:
+            # tile above
+            neigbour_count += 1
+            if tile==board[k+4]:
+                neigbours_that_can_merge+=1
+        # print(board)
+        # print(k)
+        # print(neigbour_count)
+        # print(neigbours_that_can_merge)
+        return neigbour_count, neigbours_that_can_merge
+
+
+    def check_result(self, result, labels):
         count = 0
         for i in range(len(result)):
             a = result[i]
-            b = self.test_labels[i]
-            if np.argmax(self.test_labels[i]) == np.argmax(result[i]):
+            b = labels[i]
+            if np.argmax(labels[i]) == np.argmax(result[i]):
                 count += 1
-        print("statistics:", (count/float(len(self.test_labels))) * 100)
-        return float((count/float(len(self.test_labels))) * 100)
+        print("statistics:", (count/float(len(result))) * 100)
+        return float((count/float(len(labels))) * 100)
+

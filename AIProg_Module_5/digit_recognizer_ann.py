@@ -112,7 +112,7 @@ class DigitRecognizer():
                 hidden_activations.append(res)
         if blind_test_images:
             return hidden_activations
-        self.check_result(hidden_activations)
+        self.check_result(hidden_activations, )
         return self.test_labels, hidden_activations
 
     def blind_test(self, images):
