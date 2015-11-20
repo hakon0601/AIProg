@@ -27,7 +27,9 @@ class Gui(tk.Tk):
         self.collect_cases = collect_cases
         self.color_dict = self.fill_color_dict()
         if collect_cases:
-            self.neural_network_cases = json.load(open("nn_cases_by_nn.txt"))
+            #self.neural_network_cases = json.load(open("nn_cases_by_nn.txt"))
+            #self.neural_network_cases = json.load(open("nn_cases_open_cells.txt"))
+            self.neural_network_cases = json.load(open("nn_cases_gradient.txt"))
         self.results = []
         self.start_time = time()
         print("Commands")
@@ -37,6 +39,7 @@ class Gui(tk.Tk):
         print("p: Run 50 games using NN")
         print("r: Run 50 games using a random player")
         print("c: Compare the two runs of 50")
+        self.setup_network()
         self.user_control()
         self.start_game()
 
@@ -68,8 +71,8 @@ class Gui(tk.Tk):
             self.user_control()
             self.start_game()
 
-    def user_control(self):
-        nr_of_training_cases = 10000
+    def setup_network(self):
+        nr_of_training_cases = 20000
         nr_of_test_cases = 1000
         # nodes_in_each_layer = list(map(int, input("Hidden nodes in each layer: ").replace(" ", "").split(",")))
         # print("TanH: 1, Sigmoid: 2, Rectify: 3, Softmax: 4")
@@ -87,12 +90,15 @@ class Gui(tk.Tk):
                                               act_functions=activation_functions, lr=learning_rate, number_of_input_nodes=number_of_input_nodes,
                                               number_of_output_nodes=number_of_output_nodes, bulk_size=bulk_size)
         self.move_classifier.preprosessing(boards=self.move_classifier.boards, labels=self.move_classifier.labels)
-        self.move_classifier.test_preprosessing(boards=self.move_classifier.boards, labels=self.move_classifier.labels)
+        #self.move_classifier.test_preprosessing(boards=self.move_classifier.boards, labels=self.move_classifier.labels)
         self.move_classifier.preprosessing(boards=self.move_classifier.test_boards, labels=self.move_classifier.test_labels)
         #self.move_classifier.preprosessing_merging(boards=self.move_classifier.boards, labels=self.move_classifier.labels)
         #self.move_classifier.preprosessing_merging(boards=self.move_classifier.test_boards, labels=self.move_classifier.test_labels)
 
-        errors = []
+        self.errors = []
+
+
+    def user_control(self):
 
         while True:
             self.action = input("Enter a command or a number to train: ")
@@ -120,9 +126,9 @@ class Gui(tk.Tk):
                 print("largest tiles", max(self.results_from_nn_playing),  max(self.results_from_random_playing))
                 print("average tiles", sum(self.results_from_nn_playing)/float(len(self.results_from_nn_playing)), sum(self.results_from_random_playing)/float(len(self.results_from_random_playing)))
                 p = scipy.stats.ttest_ind(self.results_from_nn_playing, self.results_from_random_playing).pvalue
-                print("score: ", max(0,min(7, ceil(-log(p,10)))))
+                print("score: ", max(0,min(7, ceil(-log(p, 10)))))
             else:
-                errors = self.move_classifier.do_training(epochs=int(self.action), errors=errors)
+                self.errors = self.move_classifier.do_training(epochs=int(self.action), errors=self.errors)
                 output_activations = self.move_classifier.do_testing(boards=self.move_classifier.test_boards)
                 print("Statistics (test set):\t\t ", self.move_classifier.check_result(output_activations, labels=self.move_classifier.test_labels), "%")
                 output_activations = self.move_classifier.do_testing(boards=self.move_classifier.boards)
@@ -139,15 +145,17 @@ class Gui(tk.Tk):
             self.results.append(largest_tile)
             if self.collect_cases:
                 print("size of training data", len(self.neural_network_cases))
-                json.dump(self.neural_network_cases, open("nn_cases_by_nn.txt", 'w'))
+                #json.dump(self.neural_network_cases, open("nn_cases_by_nn.txt", 'w'))
+                #json.dump(self.neural_network_cases, open("nn_cases_open_cells.txt", 'w'))
+                json.dump(self.neural_network_cases, open("nn_cases_gradient.txt", 'w'))
             continuing = False
             return self.start_game()
         current_node = State(self.game_board, self.depth)
         self.move_count += 1
-        chosen_move = self.expectimax.run_expectimax(current_node, self.depth, -float("inf"), float("inf"), None)
-        expectimax_result = self.expectimax.result
         flat_board = current_node.board.board[3] + current_node.board.board[2] + current_node.board.board[1] + current_node.board.board[0]
         if self.collect_cases:
+            chosen_move = self.expectimax.run_expectimax(current_node, self.depth, -float("inf"), float("inf"), None)
+            expectimax_result = self.expectimax.result
             self.neural_network_cases[str(flat_board)] = expectimax_result
         if self.action[0] == "r":
             chosen_move = self.choose_legal_random_move()
