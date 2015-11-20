@@ -101,8 +101,8 @@ class DigitRecognizer():
             j += self.bulk_size
             predictions = self.predictor(image_group)
             # Transform back from bulk to single result
-            for res in predictions:
-                output_activations.append(res)
+            for activation_vector in predictions:
+                output_activations.append(activation_vector)
         return output_activations
 
     def blind_test(self, output_activations):
@@ -120,14 +120,10 @@ class DigitRecognizer():
 
     # Checking the results against the labels and return a percentage
     def check_result(self, output_activations, labels):
-        results = []
         count = 0
         for i in range(len(output_activations)):
-            answer = np.argmax(output_activations[i])
-            if labels:
-                if int(labels[i]) == answer:
-                    count += 1
-            results.append(answer)
+            if int(labels[i]) == np.argmax(output_activations[i]):
+                count += 1
         return float((count/float(len(labels))) * 100)
 
 nr_of_training_images = 60000
@@ -147,7 +143,6 @@ digit_recog.preprosessing(digit_recog.test_images)
 # TODO
 blind_test_images = None
 #digit_recog.preprosessing(blind_test_images)
-
 
 errors = []
 

@@ -23,6 +23,7 @@ class Gui(tk.Tk):
         self.color_dict = self.fill_color_dict()
         self.neural_network_cases = json.load(open("nn_cases_by_nn.txt"))
         self.results = []
+        self.start_time = time()
         self.user_control()
         self.start_game()
 
@@ -44,44 +45,53 @@ class Gui(tk.Tk):
 
 
     def user_control(self):
-        nr_of_training_cases = 200
+        nr_of_training_cases = 100
         nr_of_test_cases = 100
-        nr_of_hidden_layers = 1
-        nr_of_nodes_in_layers = [80]
-        act_functions = [3,4]
-        lr = 0.01
+        # nodes_in_each_layer = list(map(int, input("Hidden nodes in each layer: ").replace(" ", "").split(",")))
+        # print("TanH: 1, Sigmoid: 2, Rectify: 3, Softmax: 4")
+        # activation_functions = list(map(int, input("Select activation functions: ").replace(" ", "").split(",")))
+        # learning_rate = float(input("learning rate: "))
+        # bulk_size = int(input("Bulk size: "))
+        nodes_in_each_layer = [100]
+        # Rect, tanh får 50 % etter 100 epo rect sig oigså bra 52 %
+        activation_functions = [3, 4]
+        learning_rate = 0.02
         number_of_input_nodes = 16
         number_of_output_nodes = 4
-        bulk_size = 10
+        bulk_size = 1
         self.move_classifier = MoveClassifier(nr_of_training_cases=nr_of_training_cases, nr_of_test_cases=nr_of_test_cases,
-                                              nr_of_hidden_layers=nr_of_hidden_layers, nr_of_nodes_in_layers=nr_of_nodes_in_layers,
-                                              act_functions=act_functions, lr=lr, number_of_input_nodes=number_of_input_nodes,
+                                              nr_of_nodes_in_layers=nodes_in_each_layer,
+                                              act_functions=activation_functions, lr=learning_rate, number_of_input_nodes=number_of_input_nodes,
                                               number_of_output_nodes=number_of_output_nodes, bulk_size=bulk_size)
-        self.move_classifier.preprosessing(boards=self.move_classifier.boards, labels=self.move_classifier.labels)
-        self.move_classifier.preprosessing(boards=self.move_classifier.test_boards, labels=self.move_classifier.test_labels)
+        #self.move_classifier.preprosessing(boards=self.move_classifier.boards, labels=self.move_classifier.labels)
+        self.move_classifier.preprosessing_merging(boards=self.move_classifier.boards, labels=self.move_classifier.labels)
+        #self.move_classifier.test_preprosessing(boards=self.move_classifier.boards, labels=self.move_classifier.labels)
+        self.move_classifier.preprosessing_merging(boards=self.move_classifier.test_boards, labels=self.move_classifier.test_labels)
+        #self.move_classifier.preprosessing(boards=self.move_classifier.test_boards, labels=self.move_classifier.test_labels)
 
         errors = []
 
-        start_time = time()
         while True:
             action = input("Enter a integer x to train x epocs, t to test: ")
             if action[0] == "t":
-                test_labels, result = self.move_classifier.do_testing(self.move_classifier.test_boards, self.move_classifier.test_labels)
-                training_labels, training_result = self.move_classifier.do_testing(self.move_classifier.boards, self.move_classifier.labels)
+                if len(action) == 1:
+                    output_activations = self.move_classifier.do_testing(boards=self.move_classifier.test_boards)
+                    print("Statistics (test set): \t\t", self.move_classifier.check_result(output_activations, labels=self.move_classifier.test_labels), "%")
+                    #test_labels, result = self.move_classifier.do_testing(self.move_classifier.test_boards, self.move_classifier.test_labels)
+                    #training_labels, training_result = self.move_classifier.do_testing(self.move_classifier.boards, self.move_classifier.labels)
+                elif action[1] == "l":
+                    output_activations = self.move_classifier.do_testing(boards=self.move_classifier.boards)
+                    print("Statistics (training set):\t ", self.move_classifier.check_result(output_activations, labels=self.move_classifier.labels), "%")
             elif action[0] == "s":
                 return
             else:
-                #errors = digit_recog.do_training(epochs=int(action), errors=errors)
-                results = []
-                for i in range(int(action)):
-                    errors = self.move_classifier.do_training(epochs=1, errors=errors)
-                    #test_labels, result = self.move_classifier.do_testing()
-                    #results.append(float(self.move_classifier.check_result(result)))
+                errors = self.move_classifier.do_training(epochs=int(action), errors=errors)
+                output_activations = self.move_classifier.do_testing(boards=self.move_classifier.test_boards)
+                print("Statistics (test set):\t\t ", self.move_classifier.check_result(output_activations, labels=self.move_classifier.test_labels), "%")
+                output_activations = self.move_classifier.do_testing(boards=self.move_classifier.boards)
+                print("Statistics (training set):\t ", self.move_classifier.check_result(output_activations, labels=self.move_classifier.labels), "%")
 
-                #print(results)
-                #for i in range(len(results)):
-                #    print(results[i])
-            print("Total time elapsed: " + str((time() - start_time)/60) + " min")
+            print("Total time elapsed: " + str(round((time() - self.start_time)/60, 1)) + " min")
 
 
     def run_algorithm(self):
