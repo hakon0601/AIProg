@@ -6,6 +6,7 @@ from move_classifier import MoveClassifier
 from expectimax import Expectimax
 import numpy as np
 import json
+import random
 
 
 class Gui(tk.Tk):
@@ -37,15 +38,14 @@ class Gui(tk.Tk):
             self.depth = 3
             self.move_count = 0
             self.expectimax = Expectimax()
-            self.draw_board()
+            self.draw_board(self.board)
             self.time = time()
             self.run_algorithm()
         else:
             print(self.results)
 
-
     def user_control(self):
-        nr_of_training_cases = 100
+        nr_of_training_cases = 1000
         nr_of_test_cases = 100
         # nodes_in_each_layer = list(map(int, input("Hidden nodes in each layer: ").replace(" ", "").split(",")))
         # print("TanH: 1, Sigmoid: 2, Rectify: 3, Softmax: 4")
@@ -84,6 +84,8 @@ class Gui(tk.Tk):
                     print("Statistics (training set):\t ", self.move_classifier.check_result(output_activations, labels=self.move_classifier.labels), "%")
             elif action[0] == "s":
                 return
+            elif action[0] == "r":
+                results = self.random_player()
             else:
                 errors = self.move_classifier.do_training(epochs=int(action), errors=errors)
                 output_activations = self.move_classifier.do_testing(boards=self.move_classifier.test_boards)
@@ -93,6 +95,13 @@ class Gui(tk.Tk):
 
             print("Total time elapsed: " + str(round((time() - self.start_time)/60, 1)) + " min")
 
+
+    def choose_legal_random_move(self):
+        while True:
+            r = random.randint(0,3)
+            print(r)
+            if self.random_game.is_move_legal(r):
+                return r
 
     def run_algorithm(self):
         continuing = True
@@ -147,7 +156,7 @@ class Gui(tk.Tk):
             self.game_board.generate_new_node()
             self.draw_board()
 
-    def draw_board(self):
+    def draw_board(self, board):
         self.canvas.delete("all")
         for y in range(self.dim[1]):
                 for x in range(self.dim[0]):
@@ -155,9 +164,9 @@ class Gui(tk.Tk):
                     y1 = self.dim[1]*self.cell_height - y * self.cell_height
                     x2 = x1 + self.cell_width
                     y2 = y1 - self.cell_height
-                    cell_type = self.board[y][x]
-                    text = str(self.board[y][x])
-                    color = self.color_dict[str(self.board[y][x])]
+                    cell_type = board[y][x]
+                    text = str(board[y][x])
+                    color = self.color_dict[str(board[y][x])]
                     self.canvas.create_rectangle(x1, y1, x2, y2, fill=color, tags="rect")
                     if cell_type != 0:
                         self.canvas.create_text(x1+self.cell_width/2, y1-self.cell_height/2, text=text)

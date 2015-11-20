@@ -40,7 +40,6 @@ class Gui(tk.Tk):
     def user_control(self):
         nr_of_training_cases = 1000
         nr_of_test_cases = 1000
-        nr_of_hidden_layers = 1
         nr_of_nodes_in_layers = [80]
         act_functions = [3,4]
         lr = 0.1
@@ -48,7 +47,7 @@ class Gui(tk.Tk):
         number_of_output_nodes = 4
         bulk_size = 1
         self.move_classifier = MoveClassifier(nr_of_training_cases=nr_of_training_cases, nr_of_test_cases=nr_of_test_cases,
-                                              nr_of_hidden_layers=nr_of_hidden_layers, nr_of_nodes_in_layers=nr_of_nodes_in_layers,
+                                              nr_of_nodes_in_layers=nr_of_nodes_in_layers,
                                               act_functions=act_functions, lr=lr, number_of_input_nodes=number_of_input_nodes,
                                               number_of_output_nodes=number_of_output_nodes, bulk_size=bulk_size)
         self.move_classifier.preprosessing(boards=self.move_classifier.boards, labels=self.move_classifier.labels)
