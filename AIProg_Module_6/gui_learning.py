@@ -8,6 +8,8 @@ import numpy as np
 import json
 import copy
 import random
+import scipy
+from math import log, ceil
 
 
 class Gui(tk.Tk):
@@ -99,17 +101,19 @@ class Gui(tk.Tk):
             elif self.action[0] == "s":
                 self.results_length = float('inf')
                 return
-            elif self.action[0] == "p":
+            elif self.action[0] == "p" or self.action[0] == "r":
                 self.results_length = 50
                 return
-            elif self.action[0] == "r":
-                self.results_length = 50
-                return
+
             elif self.action[0] == "c":
+                if len(self.results_from_nn_playing)+len(self.results_from_random_playing) < 100:
+                    continue
                 print("NN results:\t", self.results_from_nn_playing)
                 print("Random results:\t", self.results_from_random_playing)
                 print("largest tiles", max(self.results_from_nn_playing),  max(self.results_from_random_playing))
                 print("average tiles", sum(self.results_from_nn_playing)/float(len(self.results_from_nn_playing)), sum(self.results_from_random_playing)/float(len(self.results_from_random_playing)))
+                p = scipy.stats.ttest_ind(self.results_from_nn_playing, self.results_from_random_playing).pvalue
+                print("score: ", max(0,min(7, ceil(-log(p,10)))))
             else:
                 errors = self.move_classifier.do_training(epochs=int(self.action), errors=errors)
                 output_activations = self.move_classifier.do_testing(boards=self.move_classifier.test_boards)
