@@ -111,13 +111,12 @@ class MoveClassifier():
             largest = float(log2(max(boards[i])))
             for j in range(len(boards[i])):
                 if boards[i][j] != 0:
-                    boards[i][j] =  log2(boards[i][j]) / largest
+                    boards[i][j] = log2(boards[i][j]) / largest
 
             # Create label array
             largest_index = labels[i].index(max(labels[i]))
             labels[i] = [0, 0, 0, 0]
             labels[i][largest_index] = 1
-        self.preprosessing_merging(boards, labels)
 
     def preprosessing_merging(self, boards, labels):
         for i in range(len(boards)):

@@ -28,6 +28,13 @@ class Gui(tk.Tk):
             self.neural_network_cases = json.load(open("nn_cases_by_nn.txt"))
         self.results = []
         self.start_time = time()
+        print("Commands")
+        print("t: Test the network classification with a never before seen test set")
+        print("tl: Test the network using the training set")
+        print("s: Run infinite times using NN")
+        print("p: Run 50 games using NN")
+        print("r: Run 50 games using a random player")
+        print("c: Compare the two runs of 50")
         self.user_control()
         self.start_game()
 
@@ -60,8 +67,8 @@ class Gui(tk.Tk):
             self.start_game()
 
     def user_control(self):
-        nr_of_training_cases = 1000
-        nr_of_test_cases = 100
+        nr_of_training_cases = 10000
+        nr_of_test_cases = 1000
         # nodes_in_each_layer = list(map(int, input("Hidden nodes in each layer: ").replace(" ", "").split(",")))
         # print("TanH: 1, Sigmoid: 2, Rectify: 3, Softmax: 4")
         # activation_functions = list(map(int, input("Select activation functions: ").replace(" ", "").split(",")))
@@ -77,16 +84,16 @@ class Gui(tk.Tk):
                                               nr_of_nodes_in_layers=nodes_in_each_layer,
                                               act_functions=activation_functions, lr=learning_rate, number_of_input_nodes=number_of_input_nodes,
                                               number_of_output_nodes=number_of_output_nodes, bulk_size=bulk_size)
-        #self.move_classifier.preprosessing(boards=self.move_classifier.boards, labels=self.move_classifier.labels)
-        self.move_classifier.preprosessing_merging(boards=self.move_classifier.boards, labels=self.move_classifier.labels)
-        #self.move_classifier.test_preprosessing(boards=self.move_classifier.boards, labels=self.move_classifier.labels)
-        self.move_classifier.preprosessing_merging(boards=self.move_classifier.test_boards, labels=self.move_classifier.test_labels)
-        #self.move_classifier.preprosessing(boards=self.move_classifier.test_boards, labels=self.move_classifier.test_labels)
+        self.move_classifier.preprosessing(boards=self.move_classifier.boards, labels=self.move_classifier.labels)
+        self.move_classifier.test_preprosessing(boards=self.move_classifier.boards, labels=self.move_classifier.labels)
+        self.move_classifier.preprosessing(boards=self.move_classifier.test_boards, labels=self.move_classifier.test_labels)
+        #self.move_classifier.preprosessing_merging(boards=self.move_classifier.boards, labels=self.move_classifier.labels)
+        #self.move_classifier.preprosessing_merging(boards=self.move_classifier.test_boards, labels=self.move_classifier.test_labels)
 
         errors = []
 
         while True:
-            self.action = input("Enter a integer x to train x epocs, t to test: ")
+            self.action = input("Enter a command or a number to train: ")
             if self.action[0] == "t":
                 if len(self.action) == 1:
                     output_activations = self.move_classifier.do_testing(boards=self.move_classifier.test_boards)
