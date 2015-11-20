@@ -7,6 +7,7 @@ from expectimax import Expectimax
 import numpy as np
 import json
 import copy
+import random
 
 
 class Gui(tk.Tk):
@@ -50,14 +51,17 @@ class Gui(tk.Tk):
                 self.results_from_nn_playing = copy.copy(self.results)
                 print("largest tile", max(self.results_from_nn_playing))
                 print("average tile", sum(self.results_from_nn_playing)/float(len(self.results_from_nn_playing)))
+            elif self.action[0] == "r":
+                self.results_from_random_playing = copy.copy(self.results)
+                print("largest tile", max(self.results_from_random_playing))
+                print("average tile", sum(self.results_from_random_playing)/float(len(self.results_from_random_playing)))
             self.results = []
             self.user_control()
             self.start_game()
 
-
     def user_control(self):
-        nr_of_training_cases = 60000
-        nr_of_test_cases = 2000
+        nr_of_training_cases = 1000
+        nr_of_test_cases = 100
         # nodes_in_each_layer = list(map(int, input("Hidden nodes in each layer: ").replace(" ", "").split(",")))
         # print("TanH: 1, Sigmoid: 2, Rectify: 3, Softmax: 4")
         # activation_functions = list(map(int, input("Select activation functions: ").replace(" ", "").split(",")))
@@ -98,6 +102,14 @@ class Gui(tk.Tk):
             elif self.action[0] == "p":
                 self.results_length = 50
                 return
+            elif self.action[0] == "r":
+                self.results_length = 50
+                return
+            elif self.action[0] == "c":
+                print("NN results:\t", self.results_from_nn_playing)
+                print("Random results:\t", self.results_from_random_playing)
+                print("largest tiles", max(self.results_from_nn_playing),  max(self.results_from_random_playing))
+                print("average tiles", sum(self.results_from_nn_playing)/float(len(self.results_from_nn_playing)), sum(self.results_from_random_playing)/float(len(self.results_from_random_playing)))
             else:
                 errors = self.move_classifier.do_training(epochs=int(self.action), errors=errors)
                 output_activations = self.move_classifier.do_testing(boards=self.move_classifier.test_boards)
@@ -130,7 +142,7 @@ class Gui(tk.Tk):
             chosen_move = self.choose_legal_random_move()
         else:
             result = self.move_classifier.predictor([flat_board])
-            chosen_move = self.get_best_legal_move(result)
+            chosen_move = self.choose_legal_move_from_nn(result)
         if chosen_move == 0:
             self.game_board.move_left()
         elif chosen_move == 1:
@@ -146,7 +158,13 @@ class Gui(tk.Tk):
         if continuing:
             self.after(self.delay, lambda: self.run_algorithm())
 
-    def get_best_legal_move(self, result):
+    def choose_legal_random_move(self):
+        while True:
+            r = random.randint(0,3)
+            if self.game_board.is_move_legal(r):
+                return r
+
+    def choose_legal_move_from_nn(self, result):
         chosen_move = None
 
         while chosen_move == None or not self.game_board.is_move_legal(chosen_move):
