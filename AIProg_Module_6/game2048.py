@@ -230,22 +230,14 @@ class Game2048():
         return h_value
 
     def gradient(self):
-        h_value_sw = 0
-        h_value_se = 0
         h_value_nw = 0
-        h_value_ne = 0
         for y in range(0,4):
             for x in range(0,4):
-                # h_value_sw += self.board[y][x] * 0.5**(y + x)
-                h_value_se += self.board[y][x] * 0.5**(y + (3-x))
-                # h_value_nw += self.board[y][x] * 0.5**((3-y) + x)
                 if x > y:
                     h_value_nw += self.board[y][x] * (0.5**((3-y) + x)) * 1.1
                 else:
                     h_value_nw += self.board[y][x] * (0.5**((3-y) + x))
-                # h_value_ne += self.board[y][x] * 0.5**((3-y) + (3-x))
 
-        #return max(h_value_sw, h_value_se, h_value_nw, h_value_ne)
         return h_value_nw
 
 

@@ -104,7 +104,7 @@ class MoveClassifier():
                 output_activations.append(activation_vector)
         return output_activations
 
-    def preprosessing(self, boards, labels):
+    def preprosessing(self, boards, labels=None):
         # Kan bruke potens verdien til alle of bare dele pa det overste
         for i in range(len(boards)):
             #boards[i] = list(map(int, boards[i].replace("[", "").replace("]", "").split(", ")))
@@ -113,10 +113,11 @@ class MoveClassifier():
                 if boards[i][j] != 0:
                     boards[i][j] = log2(boards[i][j]) / largest
 
-            # Create label array
-            largest_index = labels[i].index(max(labels[i]))
-            labels[i] = [0, 0, 0, 0]
-            labels[i][largest_index] = 1
+            if labels:
+                # Create label array
+                largest_index = labels[i].index(max(labels[i]))
+                labels[i] = [0, 0, 0, 0]
+                labels[i][largest_index] = 1
 
     def preprosessing_row_column(self, boards):
         extra_nodes_matrix = []

@@ -28,9 +28,7 @@ class Gui(tk.Tk):
         self.collect_cases = collect_cases
         self.color_dict = self.fill_color_dict()
         if collect_cases:
-            self.neural_network_cases = json.load(open("nn_cases_by_nn.txt"))
-            #self.neural_network_cases = json.load(open("nn_cases_by_nn.txt"))
-            #self.neural_network_cases = json.load(open("nn_cases_open_cells.txt"))
+            self.neural_network_cases = json.load(open("nn_cases_gradient.txt"))
         self.results_from_nn_playing = []
         self.results_from_random_playing = []
         self.results = []
@@ -48,8 +46,6 @@ class Gui(tk.Tk):
 
     def start_game(self):
         if len(self.results) < self.results_length:
-        #self.user_control()
-        #if True:
             print("run nr", len(self.results))
             self.game_board = Game2048(board=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
             self.board = self.game_board.board
@@ -158,8 +154,6 @@ class Gui(tk.Tk):
             print("average tile", sum(self.results)/float(len(self.results)))
             if self.collect_cases:
                 print("size of training data", len(self.neural_network_cases))
-                #json.dump(self.neural_network_cases, open("nn_cases_by_nn.txt", 'w'))
-                #json.dump(self.neural_network_cases, open("nn_cases_open_cells.txt", 'w'))
                 json.dump(self.neural_network_cases, open("nn_cases_gradient.txt", 'w'))
             continuing = False
             return self.start_game()
@@ -173,7 +167,9 @@ class Gui(tk.Tk):
         if self.action[0] == "r":
             chosen_move = self.choose_legal_random_move()
         else:
-            result = self.move_classifier.predictor([flat_board])
+            flat_board = [str(flat_board)]
+            self.move_classifier.preprosessing(flat_board)
+            result = self.move_classifier.predictor(flat_board)
             chosen_move = self.choose_legal_move_from_nn(result)
         if chosen_move == 0:
             self.game_board.move_left()
