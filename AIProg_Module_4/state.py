@@ -86,7 +86,8 @@ class State():
 
 
     def set_h(self):
-        self.h_value = int(self.board.open_cells_count()*5) + int(self.board.sort_snake())
+        #self.h_value = int(self.board.open_cells_count()*5) + int(self.board.sort_snake())
+        self.h_value = self.board.gradient()
 
     def __str__(self):
         return "depth: " + str(self.depth) + ", move: " + str(self.move) + ", is max: " + str(self.is_max)

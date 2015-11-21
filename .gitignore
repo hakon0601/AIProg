@@ -1,3 +1,5 @@
 .idea
 __pycache__
 *.pyc
+/AIProg_Module_5/basics/all_flat_mnist_testing_cases_text.txt
+/AIProg_Module_5/basics/all_flat_mnist_training_cases_text.txt

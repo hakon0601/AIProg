@@ -10,6 +10,7 @@ import copy
 import random
 import scipy
 from math import log, ceil
+import requests
 
 
 class Gui(tk.Tk):
@@ -27,9 +28,11 @@ class Gui(tk.Tk):
         self.collect_cases = collect_cases
         self.color_dict = self.fill_color_dict()
         if collect_cases:
+            self.neural_network_cases = json.load(open("nn_cases_by_nn.txt"))
             #self.neural_network_cases = json.load(open("nn_cases_by_nn.txt"))
             #self.neural_network_cases = json.load(open("nn_cases_open_cells.txt"))
-            self.neural_network_cases = json.load(open("nn_cases_gradient.txt"))
+        self.results_from_nn_playing = []
+        self.results_from_random_playing = []
         self.results = []
         self.start_time = time()
         print("Commands")
@@ -61,19 +64,23 @@ class Gui(tk.Tk):
             print(self.results)
             if self.action[0] == "p":
                 self.results_from_nn_playing = copy.copy(self.results)
-                print("largest tile", max(self.results_from_nn_playing))
-                print("average tile", sum(self.results_from_nn_playing)/float(len(self.results_from_nn_playing)))
+                print("p, largest tile", max(self.results_from_nn_playing))
+                print("p, average tile", sum(self.results_from_nn_playing)/float(len(self.results_from_nn_playing)))
             elif self.action[0] == "r":
                 self.results_from_random_playing = copy.copy(self.results)
-                print("largest tile", max(self.results_from_random_playing))
-                print("average tile", sum(self.results_from_random_playing)/float(len(self.results_from_random_playing)))
+                print("r, largest tile", max(self.results_from_random_playing))
+                print("r, average tile", sum(self.results_from_random_playing)/float(len(self.results_from_random_playing)))
+            elif self.action[0] == "c":
+                self.results_from_nn_playing = copy.copy(self.results)
+                self.results_from_random_playing = [112]*50
+                self.print_comparison()
             self.results = []
             self.user_control()
             self.start_game()
 
     def setup_network(self):
-        nr_of_training_cases = 20000
-        nr_of_test_cases = 1000
+        nr_of_training_cases = 7000
+        nr_of_test_cases = 800
         # nodes_in_each_layer = list(map(int, input("Hidden nodes in each layer: ").replace(" ", "").split(",")))
         # print("TanH: 1, Sigmoid: 2, Rectify: 3, Softmax: 4")
         # activation_functions = list(map(int, input("Select activation functions: ").replace(" ", "").split(",")))
@@ -84,7 +91,7 @@ class Gui(tk.Tk):
         learning_rate = 0.02
         number_of_input_nodes = 16
         number_of_output_nodes = 4
-        bulk_size = 100
+        bulk_size = 1
         self.move_classifier = MoveClassifier(nr_of_training_cases=nr_of_training_cases, nr_of_test_cases=nr_of_test_cases,
                                               nr_of_nodes_in_layers=nodes_in_each_layer,
                                               act_functions=activation_functions, lr=learning_rate, number_of_input_nodes=number_of_input_nodes,
@@ -111,22 +118,21 @@ class Gui(tk.Tk):
                 elif self.action[1] == "l":
                     output_activations = self.move_classifier.do_testing(boards=self.move_classifier.boards)
                     print("Statistics (training set):\t ", self.move_classifier.check_result(output_activations, labels=self.move_classifier.labels), "%")
+                elif self.action[1] == "a":
+                    points = self.welch(self.results_from_random_playing, self.results_from_nn_playing)
+                    print("points", points)
             elif self.action[0] == "s":
                 self.results_length = float('inf')
                 return
             elif self.action[0] == "p" or self.action[0] == "r":
                 self.results_length = 50
                 return
-
             elif self.action[0] == "c":
                 if len(self.results_from_nn_playing)+len(self.results_from_random_playing) < 100:
-                    continue
-                print("NN results:\t", self.results_from_nn_playing)
-                print("Random results:\t", self.results_from_random_playing)
-                print("largest tiles", max(self.results_from_nn_playing),  max(self.results_from_random_playing))
-                print("average tiles", sum(self.results_from_nn_playing)/float(len(self.results_from_nn_playing)), sum(self.results_from_random_playing)/float(len(self.results_from_random_playing)))
-                p = scipy.stats.ttest_ind(self.results_from_nn_playing, self.results_from_random_playing).pvalue
-                print("score: ", max(0,min(7, ceil(-log(p, 10)))))
+                    self.results_length = 50
+                    return
+                else:
+                    self.print_comparison()
             else:
                 self.errors = self.move_classifier.do_training(epochs=int(self.action), errors=self.errors)
                 output_activations = self.move_classifier.do_testing(boards=self.move_classifier.test_boards)
@@ -136,13 +142,13 @@ class Gui(tk.Tk):
 
             print("Total time elapsed: " + str(round((time() - self.start_time)/60, 1)) + " min")
 
-
     def run_algorithm(self):
         continuing = True
         if self.game_board.is_game_over():
             largest_tile = self.game_board.get_largest_tile()
             print("largest tile", largest_tile)
             self.results.append(largest_tile)
+            print("average tile", sum(self.results)/float(len(self.results)))
             if self.collect_cases:
                 print("size of training data", len(self.neural_network_cases))
                 #json.dump(self.neural_network_cases, open("nn_cases_by_nn.txt", 'w'))
@@ -192,6 +198,14 @@ class Gui(tk.Tk):
             chosen_move = np.argmax(result[0])
         return chosen_move
 
+    def print_comparison(self):
+        print("NN results:\t", self.results_from_nn_playing)
+        print("Random results:\t", self.results_from_random_playing)
+        print("largest tiles", max(self.results_from_nn_playing),  max(self.results_from_random_playing))
+        print("average tiles", sum(self.results_from_nn_playing)/float(len(self.results_from_nn_playing)), sum(self.results_from_random_playing)/float(len(self.results_from_random_playing)))
+        points = self.welch(self.results_from_random_playing, self.results_from_nn_playing)
+        print("points", points)
+
     def bind_keys(self):
         self.bind('<Up>', lambda event: self.move(self, self.game_board.move_up()))
         self.bind('<Down>', lambda event: self.move(self, self.game_board.move_down()))
@@ -217,6 +231,11 @@ class Gui(tk.Tk):
                     self.canvas.create_rectangle(x1, y1, x2, y2, fill=color, tags="rect")
                     if cell_type != 0:
                         self.canvas.create_text(x1+self.cell_width/2, y1-self.cell_height/2, text=text)
+
+    def welch(self, list1, list2):
+        params = {"results": str(list1) + " " + str(list2), "raw": "1"}
+        resp = requests.post('http://folk.ntnu.no/valerijf/6/', data=params)
+        return resp.text
 
     def fill_color_dict(self):
         color_dict = {

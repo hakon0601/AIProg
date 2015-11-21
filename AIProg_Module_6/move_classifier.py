@@ -85,7 +85,7 @@ class MoveClassifier():
                 err, act_out = self.trainer(board_bulk, label_bulk)
                 error += err
 
-            print("avg error pr board: " + str(error/len(self.boards)))
+            print("avg error pr board: " + str(error/(len(self.boards))))
             errors.append(error)
         return errors
 
@@ -177,36 +177,6 @@ class MoveClassifier():
         print("times right", labels_count_dict[str([0, 1, 0, 0])])
         print("times up", labels_count_dict[str([0, 0, 1, 0])])
         print("times down", labels_count_dict[str([0, 0, 0, 1])])
-
-    def neigbour_merge(self, board, k):
-        neigbour_count = 0
-        neigbours_that_can_merge = 0
-        tile = board[k]
-        if not (k+1)%4 == 0:
-            # tile right
-            neigbour_count += 1
-            if tile==board[k+1]:
-                neigbours_that_can_merge+=1
-        if not k%4 == 0:
-            # tile left
-            neigbour_count += 1
-            if tile==board[k-1]:
-                neigbours_that_can_merge+=1
-        if k>4:
-            # tile above
-            neigbour_count += 1
-            if tile==board[k-4]:
-                neigbours_that_can_merge+=1
-        if k<12:
-            # tile above
-            neigbour_count += 1
-            if tile==board[k+4]:
-                neigbours_that_can_merge+=1
-        # print(board)
-        # print(k)
-        # print(neigbour_count)
-        # print(neigbours_that_can_merge)
-        return neigbour_count, neigbours_that_can_merge
 
     def check_result(self, output_activations, labels):
         count = 0

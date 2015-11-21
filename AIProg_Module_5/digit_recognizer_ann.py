@@ -105,7 +105,8 @@ class DigitRecognizer():
                 output_activations.append(activation_vector)
         return output_activations
 
-    def blind_test(self, output_activations):
+    def blind_test(self, images):
+        output_activations = self.predictor(images)
         results = []
         for i in range(len(output_activations)):
             answer = np.argmax(output_activations[i])
@@ -125,6 +126,9 @@ class DigitRecognizer():
             if int(labels[i]) == np.argmax(output_activations[i]):
                 count += 1
         return float((count/float(len(labels))) * 100)
+
+
+
 
 nr_of_training_images = 60000
 nr_of_testing_images = 10000
@@ -159,8 +163,9 @@ while True:
             print("Statistics: ", digit_recog.check_result(output_activations, labels=digit_recog.labels), "%")
         elif action[1] == "a":
             # TODO test the auxiliary data (blind test)
-            output_activations = digit_recog.do_testing(images=blind_test_images)
-            print("Result from blind test", digit_recog.blind_test(output_activations))
+            minor_demo(digit_recog)
+            #output_activations = digit_recog.do_testing(images=blind_test_images)
+            #print("Result from blind test", digit_recog.blind_test(output_activations))
             pass
     else:
         errors = digit_recog.do_training(epochs=int(action), errors=errors)
