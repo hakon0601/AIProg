@@ -161,7 +161,9 @@ class Gui(tk.Tk):
         if self.action[0] == "r":
             chosen_move = self.choose_legal_random_move()
         else:
-            result = self.move_classifier.predictor([flat_board])
+            flat_board = [str(flat_board)]
+            self.move_classifier.preprosessing(flat_board)
+            result = self.move_classifier.predictor(flat_board)
             chosen_move = self.choose_legal_move_from_nn(result)
         if chosen_move == 0:
             self.game_board.move_left()
