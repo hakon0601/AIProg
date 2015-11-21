@@ -3,7 +3,9 @@ import random
 
 def get_cases(nr_of_cases=1, test=False):
     # The cases loaded are for some reason not the same each time
-    case_dict = json.load(open("nn_cases_by_nn.txt"))
+    #case_dict = json.load(open("nn_cases_by_nn.txt"))
+    #case_dict = json.load(open("nn_cases_open_cells.txt"))
+    case_dict = json.load(open("nn_cases_gradient.txt"))
     inputs = list(case_dict.keys())
     labels = list(case_dict.values())
 

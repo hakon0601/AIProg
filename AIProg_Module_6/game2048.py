@@ -229,6 +229,12 @@ class Game2048():
 
         return h_value
 
+    def gradient(self):
+        h_value = 0
+        for y in range(0,4):
+            for x in range(0,4):
+                h_value += self.board[y][x] * 0.5**(y + x)
+        return h_value
 
     def print_board(self):
         # self.board = [[2,0,0,2],[2,2,2,2],[0,0,2,2],[2,0,0,0]]
