@@ -28,9 +28,7 @@ class Gui(tk.Tk):
         self.collect_cases = collect_cases
         self.color_dict = self.fill_color_dict()
         if collect_cases:
-            self.neural_network_cases = json.load(open("nn_cases_by_nn.txt"))
-            #self.neural_network_cases = json.load(open("nn_cases_by_nn.txt"))
-            #self.neural_network_cases = json.load(open("nn_cases_open_cells.txt"))
+            self.neural_network_cases = json.load(open("nn_cases_gradient.txt"))
         self.results_from_nn_playing = []
         self.results_from_random_playing = []
         self.results = []
@@ -48,8 +46,6 @@ class Gui(tk.Tk):
 
     def start_game(self):
         if len(self.results) < self.results_length:
-        #self.user_control()
-        #if True:
             print("run nr", len(self.results))
             self.game_board = Game2048(board=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
             self.board = self.game_board.board
@@ -89,7 +85,7 @@ class Gui(tk.Tk):
         # bulk_size = int(input("Bulk size: "))
         nodes_in_each_layer = [700]
         activation_functions = [3, 4]
-        learning_rate = 0.05
+        learning_rate = 0.02
         number_of_input_nodes = 16
         number_of_output_nodes = 4
         bulk_size = 1
@@ -126,7 +122,7 @@ class Gui(tk.Tk):
                 self.results_length = float('inf')
                 return
             elif self.action[0] == "p" or self.action[0] == "r":
-                self.results_length = 10000
+                self.results_length = 50
                 return
             elif self.action[0] == "c":
                 if len(self.results_from_nn_playing)+len(self.results_from_random_playing) < 100:
@@ -152,8 +148,6 @@ class Gui(tk.Tk):
             print("average tile", sum(self.results)/float(len(self.results)))
             if self.collect_cases:
                 print("size of training data", len(self.neural_network_cases))
-                #json.dump(self.neural_network_cases, open("nn_cases_by_nn.txt", 'w'))
-                #json.dump(self.neural_network_cases, open("nn_cases_open_cells.txt", 'w'))
                 json.dump(self.neural_network_cases, open("nn_cases_gradient.txt", 'w'))
             continuing = False
             return self.start_game()
