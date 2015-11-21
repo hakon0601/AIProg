@@ -89,25 +89,31 @@ class Gui(tk.Tk):
         # bulk_size = int(input("Bulk size: "))
         nodes_in_each_layer = [700]
         activation_functions = [3, 4]
-        learning_rate = 0.05
-        number_of_input_nodes = 16
+        learning_rate = 0.02
+        number_of_input_nodes = 24
         number_of_output_nodes = 4
         bulk_size = 1
         self.move_classifier = MoveClassifier(nr_of_training_cases=nr_of_training_cases, nr_of_test_cases=nr_of_test_cases,
                                               nr_of_nodes_in_layers=nodes_in_each_layer,
                                               act_functions=activation_functions, lr=learning_rate, number_of_input_nodes=number_of_input_nodes,
                                               number_of_output_nodes=number_of_output_nodes, bulk_size=bulk_size)
+
+        extra_nodes = self.move_classifier.preprosessing_row_column(boards=self.move_classifier.boards)
+        extra_test_nodes = self.move_classifier.preprosessing_row_column(boards=self.move_classifier.test_boards)
+
         self.move_classifier.preprosessing(boards=self.move_classifier.boards, labels=self.move_classifier.labels)
         #self.move_classifier.test_preprosessing(boards=self.move_classifier.boards, labels=self.move_classifier.labels)
         self.move_classifier.preprosessing(boards=self.move_classifier.test_boards, labels=self.move_classifier.test_labels)
         #self.move_classifier.preprosessing_merging(boards=self.move_classifier.boards, labels=self.move_classifier.labels)
         #self.move_classifier.preprosessing_merging(boards=self.move_classifier.test_boards, labels=self.move_classifier.test_labels)
 
+        self.move_classifier.add_extra_nodes(self.move_classifier.boards, extra_nodes)
+        self.move_classifier.add_extra_nodes(self.move_classifier.test_boards, extra_test_nodes)
+
         self.errors = []
 
 
     def user_control(self):
-
         while True:
             self.action = input("Enter a command or a number to train: ")
             if self.action[0] == "t":
@@ -126,7 +132,7 @@ class Gui(tk.Tk):
                 self.results_length = float('inf')
                 return
             elif self.action[0] == "p" or self.action[0] == "r":
-                self.results_length = 10000
+                self.results_length = 50
                 return
             elif self.action[0] == "c":
                 if len(self.results_from_nn_playing)+len(self.results_from_random_playing) < 100:

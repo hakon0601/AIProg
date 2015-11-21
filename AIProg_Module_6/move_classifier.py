@@ -107,7 +107,7 @@ class MoveClassifier():
     def preprosessing(self, boards, labels):
         # Kan bruke potens verdien til alle of bare dele pa det overste
         for i in range(len(boards)):
-            boards[i] = list(map(int, boards[i].replace("[", "").replace("]", "").split(", ")))
+            #boards[i] = list(map(int, boards[i].replace("[", "").replace("]", "").split(", ")))
             largest = float(log2(max(boards[i])))
             for j in range(len(boards[i])):
                 if boards[i][j] != 0:
@@ -117,6 +117,38 @@ class MoveClassifier():
             largest_index = labels[i].index(max(labels[i]))
             labels[i] = [0, 0, 0, 0]
             labels[i][largest_index] = 1
+
+    def preprosessing_row_column(self, boards):
+        extra_nodes_matrix = []
+        for b in range(len(boards)):
+            boards[b] = list(map(int, boards[b].replace("[", "").replace("]", "").split(", ")))
+            largest_tile = log2(max(boards[b]))
+            extra_nodes = []
+            for i in range(4):
+                extra_nodes.append(self.row_column_score(boards[b][4*i:4*(i+1)]) / float(largest_tile))
+            for j in range(4):
+                extra_nodes.append(self.row_column_score(boards[b][j::4]) / float(largest_tile))
+            extra_nodes_matrix.append(extra_nodes)
+        return extra_nodes_matrix
+
+
+    def add_extra_nodes(self, boards, extra_nodes):
+        for i in range(len(boards)):
+            boards[i] = boards[i] + extra_nodes[i]
+
+    def row_column_score(self, vector):
+        score = 0.0
+        for i in range(len(vector)-1):
+            if vector[i] == 0:
+                break
+            for j in range(i+1, len(vector)):
+                if vector[i] == vector[j]:
+                    score += log2(vector[i])
+                    break
+                elif not vector[j] == 0:
+                    break
+        return score
+
 
     def preprosessing_merging(self, boards, labels):
         for i in range(len(boards)):
