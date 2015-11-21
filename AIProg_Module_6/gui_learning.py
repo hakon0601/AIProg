@@ -168,7 +168,11 @@ class Gui(tk.Tk):
             chosen_move = self.choose_legal_random_move()
         else:
             flat_board = [str(flat_board)]
-            self.move_classifier.preprosessing(flat_board)
+            extra_nodes = self.move_classifier.preprosessing_row_column(boards=flat_board)
+            self.move_classifier.preprosessing(boards=flat_board, labels=None)
+            self.move_classifier.add_extra_nodes(flat_board, extra_nodes)
+
+            #self.move_classifier.preprosessing(flat_board)
             result = self.move_classifier.predictor(flat_board)
             chosen_move = self.choose_legal_move_from_nn(result)
         if chosen_move == 0:
