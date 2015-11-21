@@ -28,7 +28,7 @@ class Gui(tk.Tk):
         self.color_dict = self.fill_color_dict()
         if collect_cases:
             self.neural_network_cases = json.load(open("nn_cases_by_nn.txt"))
-        self.results = []
+        self.results = self.results_from_nn_playing = self.results_from_random_playing = []
         self.start_time = time()
         self.user_control()
         self.start_game()
@@ -51,18 +51,25 @@ class Gui(tk.Tk):
             print(self.results)
             if self.action[0] == "p":
                 self.results_from_nn_playing = copy.copy(self.results)
-                print("largest tile", max(self.results_from_nn_playing))
-                print("average tile", sum(self.results_from_nn_playing)/float(len(self.results_from_nn_playing)))
+                print("p, largest tile", max(self.results_from_nn_playing))
+                print("p, average tile", sum(self.results_from_nn_playing)/float(len(self.results_from_nn_playing)))
+                self.results = []
+                self.user_control()
+                self.start_game()
             elif self.action[0] == "r":
                 self.results_from_random_playing = copy.copy(self.results)
-                print("largest tile", max(self.results_from_random_playing))
-                print("average tile", sum(self.results_from_random_playing)/float(len(self.results_from_random_playing)))
-            self.results = []
-            self.user_control()
-            self.start_game()
+                print("r, largest tile", max(self.results_from_random_playing))
+                print("r, average tile", sum(self.results_from_random_playing)/float(len(self.results_from_random_playing)))
+                self.results = []
+                self.user_control()
+                self.start_game()
+            if self.action[0] == "c":
+                self.results_from_nn_playing = copy.copy(self.results)
+                self.results_from_random_playing = [112.312]*50
+                self.print_comparison()
 
     def user_control(self):
-        nr_of_training_cases = 1000
+        nr_of_training_cases = 100000
         nr_of_test_cases = 100
         # nodes_in_each_layer = list(map(int, input("Hidden nodes in each layer: ").replace(" ", "").split(",")))
         # print("TanH: 1, Sigmoid: 2, Rectify: 3, Softmax: 4")
@@ -71,7 +78,7 @@ class Gui(tk.Tk):
         # bulk_size = int(input("Bulk size: "))
         nodes_in_each_layer = [700]
         activation_functions = [3, 4]
-        learning_rate = 0.02
+        learning_rate = 0.05
         number_of_input_nodes = 16
         number_of_output_nodes = 4
         bulk_size = 100
@@ -102,18 +109,13 @@ class Gui(tk.Tk):
                 self.results_length = float('inf')
                 return
             elif self.action[0] == "p" or self.action[0] == "r":
-                self.results_length = 50
+                self.results_length = 10000
                 return
-
             elif self.action[0] == "c":
                 if len(self.results_from_nn_playing)+len(self.results_from_random_playing) < 100:
-                    continue
-                print("NN results:\t", self.results_from_nn_playing)
-                print("Random results:\t", self.results_from_random_playing)
-                print("largest tiles", max(self.results_from_nn_playing),  max(self.results_from_random_playing))
-                print("average tiles", sum(self.results_from_nn_playing)/float(len(self.results_from_nn_playing)), sum(self.results_from_random_playing)/float(len(self.results_from_random_playing)))
-                p = scipy.stats.ttest_ind(self.results_from_nn_playing, self.results_from_random_playing).pvalue
-                print("score: ", max(0,min(7, ceil(-log(p,10)))))
+                    self.results_length = 50
+                    return
+                self.print_comparison()
             else:
                 errors = self.move_classifier.do_training(epochs=int(self.action), errors=errors)
                 output_activations = self.move_classifier.do_testing(boards=self.move_classifier.test_boards)
@@ -122,7 +124,6 @@ class Gui(tk.Tk):
                 print("Statistics (training set):\t ", self.move_classifier.check_result(output_activations, labels=self.move_classifier.labels), "%")
 
             print("Total time elapsed: " + str(round((time() - self.start_time)/60, 1)) + " min")
-
 
     def run_algorithm(self):
         continuing = True
@@ -137,10 +138,10 @@ class Gui(tk.Tk):
             return self.start_game()
         current_node = State(self.game_board, self.depth)
         self.move_count += 1
-        chosen_move = self.expectimax.run_expectimax(current_node, self.depth, -float("inf"), float("inf"), None)
-        expectimax_result = self.expectimax.result
         flat_board = current_node.board.board[3] + current_node.board.board[2] + current_node.board.board[1] + current_node.board.board[0]
         if self.collect_cases:
+            chosen_move = self.expectimax.run_expectimax(current_node, self.depth, -float("inf"), float("inf"), None)
+            expectimax_result = self.expectimax.result
             self.neural_network_cases[str(flat_board)] = expectimax_result
         if self.action[0] == "r":
             chosen_move = self.choose_legal_random_move()
@@ -176,6 +177,14 @@ class Gui(tk.Tk):
                 result[0][chosen_move] = -1
             chosen_move = np.argmax(result[0])
         return chosen_move
+
+    def print_comparison(self):
+        print("NN results:\t", self.results_from_nn_playing)
+        print("Random results:\t", self.results_from_random_playing)
+        print("largest tiles", max(self.results_from_nn_playing),  max(self.results_from_random_playing))
+        print("average tiles", sum(self.results_from_nn_playing)/float(len(self.results_from_nn_playing)), sum(self.results_from_random_playing)/float(len(self.results_from_random_playing)))
+        p = scipy.stats.ttest_ind(self.results_from_nn_playing, self.results_from_random_playing).pvalue
+        print("score: ", max(0,min(7, ceil(-log(p,10)))))
 
     def bind_keys(self):
         self.bind('<Up>', lambda event: self.move(self, self.game_board.move_up()))

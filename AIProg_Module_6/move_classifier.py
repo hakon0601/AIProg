@@ -117,7 +117,7 @@ class MoveClassifier():
             largest_index = labels[i].index(max(labels[i]))
             labels[i] = [0, 0, 0, 0]
             labels[i][largest_index] = 1
-        self.preprosessing_merging(boards, labels)
+        #self.preprosessing_merging(boards, labels)
 
     def preprosessing_merging(self, boards, labels):
         for i in range(len(boards)):
