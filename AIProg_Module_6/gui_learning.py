@@ -78,6 +78,7 @@ class Gui(tk.Tk):
             self.user_control()
             self.start_game()
 
+
     def setup_network(self):
         nr_of_training_cases = 7000
         nr_of_test_cases = 800
@@ -88,7 +89,7 @@ class Gui(tk.Tk):
         # bulk_size = int(input("Bulk size: "))
         nodes_in_each_layer = [700]
         activation_functions = [3, 4]
-        learning_rate = 0.02
+        learning_rate = 0.05
         number_of_input_nodes = 16
         number_of_output_nodes = 4
         bulk_size = 1
@@ -125,7 +126,7 @@ class Gui(tk.Tk):
                 self.results_length = float('inf')
                 return
             elif self.action[0] == "p" or self.action[0] == "r":
-                self.results_length = 50
+                self.results_length = 10000
                 return
             elif self.action[0] == "c":
                 if len(self.results_from_nn_playing)+len(self.results_from_random_playing) < 100:
