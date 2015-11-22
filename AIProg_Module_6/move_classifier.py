@@ -103,9 +103,8 @@ class MoveClassifier():
         return output_activations
 
     def preprocessing(self, boards, labels=None):
-        # Kan bruke potens verdien til alle of bare dele pa det overste
+        # Uses the logarithmical value and divides by the larges tile to map to a value in the range [0, 1]
         for i in range(len(boards)):
-            #boards[i] = list(map(int, boards[i].replace("[", "").replace("]", "").split(", ")))
             largest = float(log2(max(boards[i])))
             for j in range(len(boards[i])):
                 if boards[i][j] != 0:
@@ -118,21 +117,17 @@ class MoveClassifier():
                 labels[i][largest_index] = 1
 
     def preprocessing_row_column(self, boards):
-        extra_nodes_matrix = []
+        # Adds 8 extra nodes, one for each row/column.
+        # Each node represents the the number of tiles you can merge on a row/column and their logaritmical normalized value
+        processed_board = []
         for b in range(len(boards)):
-            largest_tile = log2(max(boards[b]))
             extra_nodes = []
             for i in range(4):
-                extra_nodes.append(self.row_column_score(boards[b][4*i:4*(i+1)]) / float(largest_tile*2))
+                extra_nodes.append(self.row_column_score(boards[b][4*i:4*(i+1)]) / 2.0)
             for j in range(4):
-                extra_nodes.append(self.row_column_score(boards[b][j::4]) / float(largest_tile*2))
-            extra_nodes_matrix.append(extra_nodes)
-        return extra_nodes_matrix
-
-    def add_extra_nodes(self, boards, extra_nodes):
-        for i in range(len(boards)):
-            boards[i] = boards[i] + extra_nodes[i]
-        return boards
+                extra_nodes.append(self.row_column_score(boards[b][j::4]) / 2.0)
+            processed_board.append(boards[b] + extra_nodes)
+        return processed_board
 
     def row_column_score(self, vector):
         score = 0.0
@@ -141,7 +136,7 @@ class MoveClassifier():
                 break
             for j in range(i+1, len(vector)):
                 if vector[i] == vector[j]:
-                    score += log2(vector[i])
+                    score += vector[i]
                     break
                 elif not vector[j] == 0:
                     break

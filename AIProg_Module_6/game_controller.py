@@ -15,9 +15,11 @@ class GameController():
 
     NR_OF_TRAINING_CASES = 7000
     NR_OF_TEST_CASES = 833
+    NR_OF_OUTPUT_NODES = 4
 
-    def __init__(self, collect_cases=False, depth=3):
+    def __init__(self, collect_cases=False, use_merge_input_nodes=False, depth=3):
         self.collect_cases = collect_cases
+        self.use_merge_input_nodes = use_merge_input_nodes
         self.depth = depth
         if collect_cases:
             self.neural_network_cases = load_cases()
@@ -58,14 +60,15 @@ class GameController():
             self.start_game()
 
     def setup_network(self, use_default=False):
-        nr_of_training_cases = GameController.NR_OF_TRAINING_CASES
-        nr_of_test_cases = GameController.NR_OF_TEST_CASES
+        if self.use_merge_input_nodes:
+            number_of_input_nodes = 24
+        else:
+            number_of_input_nodes = 16
+
         if use_default:
             nodes_in_each_layer = [700]
             activation_functions = [3, 4]
             learning_rate = 0.02
-            number_of_input_nodes = 24
-            number_of_output_nodes = 4
             bulk_size = 1
         else:
             nodes_in_each_layer = list(map(int, input("Hidden nodes in each layer: ").replace(" ", "").split(",")))
@@ -74,25 +77,25 @@ class GameController():
             learning_rate = float(input("learning rate: "))
             bulk_size = int(input("Bulk size: "))
 
-        self.move_classifier = MoveClassifier(nr_of_training_cases=nr_of_training_cases,
-                                              nr_of_test_cases=nr_of_test_cases,
+        self.move_classifier = MoveClassifier(nr_of_training_cases=GameController.NR_OF_TRAINING_CASES,
+                                              nr_of_test_cases=GameController.NR_OF_TEST_CASES,
                                               nr_of_nodes_in_layers=nodes_in_each_layer,
                                               act_functions=activation_functions, lr=learning_rate,
                                               number_of_input_nodes=number_of_input_nodes,
-                                              number_of_output_nodes=number_of_output_nodes,
+                                              number_of_output_nodes=GameController.NR_OF_OUTPUT_NODES,
                                               bulk_size=bulk_size)
-
-        extra_nodes = self.move_classifier.preprocessing_row_column(boards=self.move_classifier.boards)
-        extra_test_nodes = self.move_classifier.preprocessing_row_column(boards=self.move_classifier.test_boards)
 
         self.move_classifier.preprocessing(boards=self.move_classifier.boards, labels=self.move_classifier.labels)
         self.move_classifier.preprocessing(boards=self.move_classifier.test_boards, labels=self.move_classifier.test_labels)
         #self.move_classifier.test_preprocessing(boards=self.move_classifier.boards, labels=self.move_classifier.labels)
-        #self.move_classifier.preprocessing_merging(boards=self.move_classifier.boards, labels=self.move_classifier.labels)
-        #self.move_classifier.preprocessing_merging(boards=self.move_classifier.test_boards, labels=self.move_classifier.test_labels)
 
-        self.move_classifier.add_extra_nodes(self.move_classifier.boards, extra_nodes)
-        self.move_classifier.add_extra_nodes(self.move_classifier.test_boards, extra_test_nodes)
+        if self.use_merge_input_nodes:
+            self.move_classifier.boards = self.move_classifier.preprocessing_row_column(boards=self.move_classifier.boards)
+            self.move_classifier.test_boards = self.move_classifier.preprocessing_row_column(boards=self.move_classifier.test_boards)
+            #self.move_classifier.add_extra_nodes(self.move_classifier.boards, extra_nodes)
+            #self.move_classifier.add_extra_nodes(self.move_classifier.test_boards, extra_test_nodes)
+
+
         self.errors = []
 
     def user_control(self):
@@ -141,11 +144,13 @@ class GameController():
         if self.action[0] == "r":
             chosen_move = self.choose_legal_random_move()
         else:
-            extra_nodes = self.move_classifier.preprocessing_row_column(boards=[flat_board])
-            self.move_classifier.preprocessing(boards=[flat_board], labels=None)
-            flat_board = self.move_classifier.add_extra_nodes([flat_board], extra_nodes)[0]
+            flat_board = [flat_board]
+            self.move_classifier.preprocessing(boards=flat_board, labels=None)
+            if self.use_merge_input_nodes:
+                flat_board = self.move_classifier.preprocessing_row_column(boards=flat_board)
+#               flat_board = self.move_classifier.add_extra_nodes([flat_board], extra_nodes)[0]
 
-            output_activations = self.move_classifier.predictor([flat_board])
+            output_activations = self.move_classifier.predictor(flat_board)
             chosen_move = self.choose_legal_move_from_nn(output_activations)
 
         self.do_move(chosen_move)
@@ -213,7 +218,7 @@ class GameController():
     def print_commands(self):
         print("Commands")
         print("t: Test the network classification using both the test set and the training set")
-        print("L toggle case collection. Currently: ", self.collect_cases)
+        print("l toggle case collection. Currently: ", self.collect_cases)
         print("s: Run infinite times using NN")
         print("p: Run 50 games using NN")
         print("r: Run 50 games using a random player")

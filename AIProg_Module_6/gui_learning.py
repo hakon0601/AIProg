@@ -4,7 +4,7 @@ from game_controller import GameController
 
 
 class Gui(tk.Tk):
-    def __init__(self, delay, collect_cases=False, *args, **kwargs):
+    def __init__(self, delay, collect_cases=False, use_merge_input_nodes=False, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         self.title("2048-solver Neural nets")
         self.cell_width = self.cell_height = 100
@@ -17,7 +17,7 @@ class Gui(tk.Tk):
         self.color_dict = self.fill_color_dict()
         #self.bind_keys()
 
-        self.controller = GameController(collect_cases=collect_cases)
+        self.controller = GameController(collect_cases=collect_cases, use_merge_input_nodes=use_merge_input_nodes)
         self.do_iteration()
 
     def do_iteration(self):
@@ -72,5 +72,5 @@ class Gui(tk.Tk):
         return color_dict
 
 if __name__ == "__main__":
-    app = Gui(delay=2, collect_cases=False)
+    app = Gui(delay=2, collect_cases=False, use_merge_input_nodes=True)
     app.mainloop()
