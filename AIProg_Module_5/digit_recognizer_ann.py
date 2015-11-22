@@ -10,10 +10,8 @@ import theano.tensor.nnet as Tann
 class DigitRecognizer():
 
     def __init__(self, nr_of_training_images, nr_of_hidden_layers, nr_of_nodes_in_layers, act_functions, lr, number_of_input_nodes=28 * 28, no=10, bulk_size=1):
-        self.images, self.labels = gen_x_flat_cases(nr_of_training_images)
-        self.test_images, self.test_labels = gen_x_flat_cases(nr_of_testing_images, type="testing")
-        #self.images, self.labels = gen_flat_cases()
-        #self.test_images, self.test_labels = gen_flat_cases(type="testing")
+        self.images, self.labels = gen_flat_cases()
+        self.test_images, self.test_labels = gen_flat_cases(type="testing")
 
         self.lrate = lr
         self.bulk_size = bulk_size

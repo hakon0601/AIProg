@@ -41,49 +41,6 @@ __mnist_path__ = "/Users/hakon0601/Dropbox/Python/AIProg/AIProg_Module_5/basics/
 # subset, and the remaining two dimensions are those of the rows and columns of each image.
 # 2) labels - a 2-dimensional numpy array whose first dimension is the number of images in subset and whose second
 # dimension is always 1.   Check it out by calling and examining the results.
-def load_x_mnist(x, dataset="training", digits=numpy.arange(10), path= __mnist_path__):
-
-    if dataset == "training":
-        fname_img = os.path.join(path, 'train-images.idx3-ubyte')
-        fname_lbl = os.path.join(path, 'train-labels.idx1-ubyte')
-    elif dataset == "testing":
-        fname_img = os.path.join(path, 't10k-images.idx3-ubyte')
-        fname_lbl = os.path.join(path, 't10k-labels.idx1-ubyte')
-    else:
-        raise ValueError("dataset must be 'testing' or 'training'")
-
-    flbl = open(fname_lbl, 'rb')
-    magic_nr, size = struct.unpack(">II", flbl.read(8))
-    lbl = pyarray("b", flbl.read())
-    flbl.close()
-
-    fimg = open(fname_img, 'rb')
-    magic_nr, size, rows, cols = struct.unpack(">IIII", fimg.read(16))
-    img = pyarray("B", fimg.read())
-    fimg.close()
-
-    ind = [ k for k in range(size) if lbl[k] in digits ]
-#    N = len(ind)
-    N = x
-
-    images = numpy.zeros((N, rows, cols), dtype=numpy.uint8)
-    labels = numpy.zeros((N, 1), dtype=numpy.int8)
-
-
-    for i in range(x):
-        images[i] = numpy.array(img[ ind[i]*rows*cols : (ind[i]+1)*rows*cols ]).reshape((rows, cols))
-        labels[i] = lbl[ind[i]]
-
-    return images, labels
-
-# TODO also fix
-def gen_x_flat_cases(x, digits=numpy.arange(10),type='training',cases=None):
-     images, labels = cases if cases else load_x_mnist(x, type, digits=digits)
-     i2 = list(map(flatten_image,images))
-     l2 = kd_reduce((lambda a, b: a + b), labels.tolist())
-     return i2, l2
-
-
 
 def load_mnist(dataset="training", digits=numpy.arange(10), path= __mnist_path__):
 
