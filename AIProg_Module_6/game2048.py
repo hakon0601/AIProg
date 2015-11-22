@@ -237,9 +237,7 @@ class Game2048():
                     h_value_nw += self.board[y][x] * (0.5**((3-y) + x)) * 1.1
                 else:
                     h_value_nw += self.board[y][x] * (0.5**((3-y) + x))
-
         return h_value_nw
-
 
     def print_board(self):
         # self.board = [[2,0,0,2],[2,2,2,2],[0,0,2,2],[2,0,0,0]]

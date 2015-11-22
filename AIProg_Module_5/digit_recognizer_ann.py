@@ -113,7 +113,7 @@ class DigitRecognizer():
             results.append(answer)
         return results
 
-    def preprosessing(self, feature_sets):
+    def preprocessing(self, feature_sets):
         #Scales images to have values between 0.0 and 1.0 instead of 0 and 255
         for image in range(len(feature_sets)):
             for value in range(len(feature_sets[image])):
@@ -141,12 +141,12 @@ learning_rate = float(input("learning rate: "))
 bulk_size = int(input("Bulk size: "))
 
 digit_recog = DigitRecognizer(nr_of_training_images, number_of_hidden_layers, nodes_in_each_layer, activation_functions, learning_rate, bulk_size=bulk_size)
-digit_recog.preprosessing(digit_recog.images)
-digit_recog.preprosessing(digit_recog.test_images)
+digit_recog.preprocessing(digit_recog.images)
+digit_recog.preprocessing(digit_recog.test_images)
 
 # TODO
 blind_test_images = None
-#digit_recog.preprosessing(blind_test_images)
+#digit_recog.preprocessing(blind_test_images)
 
 errors = []
 

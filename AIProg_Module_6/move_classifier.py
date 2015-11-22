@@ -1,20 +1,18 @@
 from collections import defaultdict
-import file_handler
-import json
-from time import time
 import theano
 import numpy as np
 import theano.tensor as T
 import theano.tensor.nnet as Tann
 from math import log2
 
+from file_handler import *
 
 
 class MoveClassifier():
 
     def __init__(self, nr_of_training_cases, nr_of_test_cases, nr_of_nodes_in_layers, act_functions, lr, number_of_input_nodes, number_of_output_nodes, bulk_size=1):
-        self.boards, self.labels = file_handler.get_cases(nr_of_training_cases)
-        self.test_boards, self.test_labels = file_handler.get_cases(nr_of_test_cases, test=True)
+        self.boards, self.labels = process_cases_for_nn(nr_of_training_cases)
+        self.test_boards, self.test_labels = process_cases_for_nn(nr_of_test_cases, test=True)
 
         self.lrate = lr
         self.bulk_size = bulk_size
@@ -104,7 +102,7 @@ class MoveClassifier():
                 output_activations.append(activation_vector)
         return output_activations
 
-    def preprosessing(self, boards, labels=None):
+    def preprocessing(self, boards, labels=None):
         # Kan bruke potens verdien til alle of bare dele pa det overste
         for i in range(len(boards)):
             #boards[i] = list(map(int, boards[i].replace("[", "").replace("]", "").split(", ")))
@@ -119,23 +117,22 @@ class MoveClassifier():
                 labels[i] = [0, 0, 0, 0]
                 labels[i][largest_index] = 1
 
-    def preprosessing_row_column(self, boards):
+    def preprocessing_row_column(self, boards):
         extra_nodes_matrix = []
         for b in range(len(boards)):
-            boards[b] = list(map(int, boards[b].replace("[", "").replace("]", "").split(", ")))
             largest_tile = log2(max(boards[b]))
             extra_nodes = []
             for i in range(4):
-                extra_nodes.append(self.row_column_score(boards[b][4*i:4*(i+1)]) / float(largest_tile))
+                extra_nodes.append(self.row_column_score(boards[b][4*i:4*(i+1)]) / float(largest_tile*2))
             for j in range(4):
-                extra_nodes.append(self.row_column_score(boards[b][j::4]) / float(largest_tile))
+                extra_nodes.append(self.row_column_score(boards[b][j::4]) / float(largest_tile*2))
             extra_nodes_matrix.append(extra_nodes)
         return extra_nodes_matrix
-
 
     def add_extra_nodes(self, boards, extra_nodes):
         for i in range(len(boards)):
             boards[i] = boards[i] + extra_nodes[i]
+        return boards
 
     def row_column_score(self, vector):
         score = 0.0
@@ -150,55 +147,7 @@ class MoveClassifier():
                     break
         return score
 
-
-    def preprosessing_merging(self, boards, labels):
-        for i in range(len(boards)):
-            boards[i] = list(map(int, boards[i].replace("[", "").replace("]", "").split(", ")))
-            square_board = [boards[i][0:4], boards[i][4:8], boards[i][8:12], boards[i][12:16]]
-            for y in range(4):
-                for x in range(4):
-                    current = square_board[y][x]
-                    possible_merges = 0
-                    neighbors = 0
-                    w = 0
-                    n = 0
-                    e = 0
-                    s = 0
-                    # West
-                    if x > 0:
-                        w = square_board[y][x - 1]
-                        neighbors += 1
-                        if w != 0 and current == w:
-                            possible_merges += 1
-                    # North
-                    if (y > 0):
-                        n = square_board[y - 1][x]
-                        neighbors += 1
-                        if n != 0 and current == n:
-                            possible_merges += 1
-                    # East
-                    if x < 3:
-                        e = square_board[y][x + 1]
-                        neighbors += 1
-                        if e != 0 and current == e:
-                            possible_merges += 1
-                    # South
-                    if (y < 3):
-                        s = square_board[y + 1][x]
-                        neighbors += 1
-                        if s != 0 and current == s:
-                            possible_merges += 1
-                    #current_new_value = (1 - (current - w)**2) + (1 - (current - n)**2) + (1 - (current - e)**2) + (1 - (current - s)**2)
-                    current_new_value = possible_merges/neighbors
-                    boards[i][y*4 + x] = current_new_value
-
-            # Create label array
-            largest_index = labels[i].index(max(labels[i]))
-            labels[i] = [0, 0, 0, 0]
-            labels[i][largest_index] = 1
-
-
-    def test_preprosessing(self, boards, labels):
+    def test_preprocessing(self, boards, labels):
         board_count_dict = defaultdict(int)
         labels_count_dict = defaultdict(int)
         for i in range(len(boards)):
@@ -206,10 +155,10 @@ class MoveClassifier():
             labels_count_dict[str(labels[i])] += 1
         print("number of boards", len(boards))
         print("number of boards in dict", len(board_count_dict.keys()))
-        print("times left", labels_count_dict[str([1, 0, 0, 0])])
-        print("times right", labels_count_dict[str([0, 1, 0, 0])])
-        print("times up", labels_count_dict[str([0, 0, 1, 0])])
-        print("times down", labels_count_dict[str([0, 0, 0, 1])])
+        print("times left", labels_count_dict[str([1, 0, 0, 0])], "\t", labels_count_dict[str([1, 0, 0, 0])] / float(len(boards)), "%")
+        print("times right", labels_count_dict[str([0, 1, 0, 0])], "\t", labels_count_dict[str([0, 1, 0, 0])] / float(len(boards)), "%")
+        print("times up", labels_count_dict[str([0, 0, 1, 0])], "\t", labels_count_dict[str([0, 0, 1, 0])] / float(len(boards)), "%")
+        print("times down", labels_count_dict[str([0, 0, 0, 1])], "\t", labels_count_dict[str([0, 0, 0, 1])] / float(len(boards)), "%")
 
     def check_result(self, output_activations, labels):
         count = 0
