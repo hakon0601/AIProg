@@ -30,7 +30,7 @@ class GameController():
         self.results_from_random_playing = [112]*50
         self.start_time = time()
         self.print_commands()
-        self.setup_network(use_default=True)
+        self.setup_network()
         self.user_control()
         self.start_game()
 
@@ -59,13 +59,13 @@ class GameController():
             self.user_control()
             self.start_game()
 
-    def setup_network(self, use_default=False):
+    def setup_network(self):
         if self.use_merge_input_nodes:
             number_of_input_nodes = 24
         else:
             number_of_input_nodes = 16
-
-        if use_default:
+        use_default = input("Use default [y/n]: ")
+        if use_default[0] == "y":
             nodes_in_each_layer = [700]
             activation_functions = [3, 4]
             learning_rate = 0.02
